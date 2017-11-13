@@ -32,8 +32,6 @@ import org.apache.thrift.protocol.TMessageType;
 import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.protocol.TStruct;
 import org.apache.thrift.transport.TIOStreamTransport;
-import org.jboss.netty.channel.group.ChannelGroup;
-import org.jboss.netty.channel.group.DefaultChannelGroup;
 
 import com.facebook.nifty.processor.NiftyProcessor;
 import com.google.common.collect.ImmutableSet;

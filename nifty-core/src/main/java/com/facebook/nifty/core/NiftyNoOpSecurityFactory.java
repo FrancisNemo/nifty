@@ -18,15 +18,14 @@ package com.facebook.nifty.core;
 
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.SimpleChannelInboundHandler;
 
 public class NiftyNoOpSecurityFactory implements NiftySecurityFactory
 {
-    static final ChannelHandler noOpHandler = new SimpleChannelHandler() {
+    static final ChannelHandler noOpHandler = new SimpleChannelInboundHandler() {
         @Override
-        public void channelOpen(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception
-        {
-            super.channelOpen(ctx, e);
-            ctx.pipeline().remove(this);
+        protected void channelRead0(ChannelHandlerContext channelHandlerContext, Object o) throws Exception {
+            //TODO
         }
     };
 

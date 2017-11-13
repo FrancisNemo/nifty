@@ -15,7 +15,6 @@
  */
 package com.facebook.nifty.ssl;
 
-import org.jboss.netty.handler.ssl.SslBufferPool;
 
 import java.nio.ByteBuffer;
 import java.util.concurrent.ArrayBlockingQueue;

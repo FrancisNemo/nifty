@@ -16,6 +16,7 @@
 package com.facebook.nifty.ssl;
 
 import com.google.common.base.Throwables;
+import io.netty.buffer.ByteBufAllocator;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslHandler;
 
@@ -95,7 +96,7 @@ public class SslClientConfiguration {
     }
 
     public SslHandler createHandler() throws Exception {
-        return clientContext.newHandler();
+        return clientContext.newHandler(ByteBufAllocator.DEFAULT);
     }
 
     public SslHandler createHandler(SocketAddress address) throws Exception {
@@ -108,6 +109,6 @@ public class SslClientConfiguration {
             return createHandler();
         }
 
-        return clientContext.newHandler(host, netAddress.getPort());
+        return clientContext.newHandler(ByteBufAllocator.DEFAULT);
     }
 }

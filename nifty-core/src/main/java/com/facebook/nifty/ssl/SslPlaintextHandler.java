@@ -16,7 +16,28 @@
 package com.facebook.nifty.ssl;
 
 
-public class SslPlaintextHandler extends FrameDecoder {
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.ByteToMessageDecoder;
+
+import java.util.List;
+
+public class SslPlaintextHandler extends ByteToMessageDecoder {
+    @Override
+    protected void decode(ChannelHandlerContext ctx, ByteBuf byteBuf, List<Object> list) throws Exception {
+        if (byteBuf.readableBytes() < 9) {
+            return;
+        }
+
+        //TODO
+//        if (looksLikeTLS(byteBuf)) {
+//            ctx.pipeline().addAfter(ctx.getName(), sslHandlerName, serverConfiguration.createHandler());
+//            // Tell the SessionAwareSslHandler to handle the TLS handshake.
+//            Channels.fireMessageReceived(ctx, TLSConnectedEvent.SINGLETON);
+//        }
+//        ctx.pipeline().remove(this);
+       byteBuf.readBytes(byteBuf.readableBytes());
+    }
 
 //    private final SslServerConfiguration serverConfiguration;
 //    private final String sslHandlerName;

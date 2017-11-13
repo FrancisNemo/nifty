@@ -34,8 +34,8 @@ public class NettyServerConfigBuilder extends NettyConfigBuilderBase<NettyServer
     private final SocketChannelConfig socketChannelConfig = (SocketChannelConfig) Proxy.newProxyInstance(
             getClass().getClassLoader(),
             new Class<?>[]{SocketChannelConfig.class},
-            new Magic("child.")
-    );
+            new Magic("child."));
+
     private final ServerSocketChannelConfig serverSocketChannelConfig = (ServerSocketChannelConfig) Proxy.newProxyInstance(
             getClass().getClassLoader(),
             new Class<?>[]{ServerSocketChannelConfig.class},
@@ -52,13 +52,13 @@ public class NettyServerConfigBuilder extends NettyConfigBuilderBase<NettyServer
 
     public SocketChannelConfig getSocketChannelConfig()
     {
-        return socketChannelConfig;
+        return this.socketChannelConfig;
     }
 
 
     public ServerSocketChannelConfig getServerSocketChannelConfig()
     {
-        return serverSocketChannelConfig;
+        return this.serverSocketChannelConfig;
     }
 
     public NettyServerConfig build()

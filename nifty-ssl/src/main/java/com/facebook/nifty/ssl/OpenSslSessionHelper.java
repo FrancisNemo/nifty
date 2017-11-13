@@ -15,12 +15,11 @@
  */
 package com.facebook.nifty.ssl;
 
+import io.netty.handler.ssl.OpenSslEngine;
 import org.apache.tomcat.jni.SSL;
-import org.jboss.netty.handler.ssl.OpenSslEngine;
 
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLException;
-import javax.net.ssl.SSLSession;
 import javax.security.cert.CertificateException;
 import javax.security.cert.X509Certificate;
 import java.lang.reflect.Field;

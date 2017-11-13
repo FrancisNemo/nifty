@@ -16,6 +16,7 @@
 package com.facebook.nifty.core;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 
@@ -44,13 +45,13 @@ public class TChannelBufferOutputTransport extends TTransport
     public TChannelBufferOutputTransport()
     {
         this.minimumSize = DEFAULT_MINIMUM_SIZE;
-        outputBuffer = ChannelBuffers.dynamicBuffer(this.minimumSize);
+        outputBuffer = ByteBufAllocator.DEFAULT.buffer(this.minimumSize);
     }
 
     public TChannelBufferOutputTransport(int minimumSize)
     {
         this.minimumSize = Math.min(DEFAULT_MINIMUM_SIZE, minimumSize);
-        outputBuffer = ChannelBuffers.dynamicBuffer(this.minimumSize);
+        outputBuffer = ByteBufAllocator.DEFAULT.buffer(this.minimumSize);
     }
 
     @Override
@@ -102,7 +103,7 @@ public class TChannelBufferOutputTransport extends TTransport
         }
 
         if (shouldShrinkBuffer()) {
-            outputBuffer = ChannelBuffers.dynamicBuffer(shrunkenSize);
+            outputBuffer = ByteBufAllocator.DEFAULT.buffer(shrunkenSize);
             bufferUnderUsedCounter = 0;
         } else {
             outputBuffer.clear();

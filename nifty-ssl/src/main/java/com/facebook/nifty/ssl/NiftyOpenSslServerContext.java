@@ -16,13 +16,11 @@
 package com.facebook.nifty.ssl;
 
 import com.google.common.collect.ImmutableList;
+import io.netty.handler.ssl.OpenSslEngine;
 import org.apache.tomcat.jni.Pool;
 import org.apache.tomcat.jni.SSL;
 import org.apache.tomcat.jni.SSLContext;
 import org.apache.tomcat.jni.SessionTicketKey;
-import org.jboss.netty.handler.ssl.OpenSslEngine;
-import org.jboss.netty.handler.ssl.SslBufferPool;
-import org.jboss.netty.handler.ssl.SslHandler;
 
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLException;
@@ -51,7 +49,7 @@ public final class NiftyOpenSslServerContext implements SslHandlerFactory {
 
     private final OpenSslServerConfiguration sslServerConfiguration;
 
-    private final SslBufferPool bufferPool;
+    //private final SslBufferPool bufferPool;
 
     /**
      * The OpenSSL SSL_CTX object
@@ -103,7 +101,7 @@ public final class NiftyOpenSslServerContext implements SslHandlerFactory {
         if (threadLocalSslBuffer) {
             bufferPool = new ThreadLocalSslBufferPool(maxSslBufferBytes, preallocateSslBuffer, true);
         } else {
-            bufferPool = new SslBufferPool(maxSslBufferBytes, preallocateSslBuffer, true);
+        //    bufferPool = new SslBufferPool(maxSslBufferBytes, preallocateSslBuffer, true);
         }
 
         // Create a new SSL_CTX and configure it.
@@ -263,14 +261,14 @@ public final class NiftyOpenSslServerContext implements SslHandlerFactory {
     /**
      * Returns a new server-side {@link SSLEngine} with the current configuration.
      */
-    public SSLEngine newEngine() {
-        if (nextProtocols.isEmpty()) {
-            return new OpenSslEngine(ctx, bufferPool, null);
-        } else {
-            return new OpenSslEngine(
-                    ctx, bufferPool, nextProtocols.get(nextProtocols.size() - 1));
-        }
-    }
+//    public SSLEngine newEngine() {
+//        if (nextProtocols.isEmpty()) {
+//            return new OpenSslEngine(ctx, bufferPool, null, 443);
+//        } else {
+//            return new OpenSslEngine(
+//                    ctx, bufferPool, nextProtocols.get(nextProtocols.size() - 1), 443);
+//        }
+//    }
 
     /**
      * Sets the SSL session ticket keys of this context.
@@ -291,11 +289,11 @@ public final class NiftyOpenSslServerContext implements SslHandlerFactory {
     }
 
     @Override
-    public SslHandler newHandler() {
-        SslHandler handler = new BetterSslHandler(newEngine(), bufferPool, sslServerConfiguration);
-        handler.setCloseOnSSLException(true);
-        return handler;
-    }
+//    public SslHandler newHandler() {
+//        SslHandler handler = new BetterSslHandler(newEngine(), bufferPool, sslServerConfiguration);
+//        handler.setCloseOnSSLException(true);
+//        return handler;
+//    }
 
     @Override
     @SuppressWarnings("FinalizeDeclaration")

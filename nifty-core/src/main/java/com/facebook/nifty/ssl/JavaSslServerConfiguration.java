@@ -16,6 +16,7 @@
 package com.facebook.nifty.ssl;
 
 import com.google.common.base.Throwables;
+import io.netty.buffer.ByteBufAllocator;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.ssl.SslProvider;
@@ -47,34 +48,34 @@ public class JavaSslServerConfiguration extends SslServerConfiguration {
     }
 
     protected SslHandlerFactory createSslHandlerFactory() {
-        try {
-            SslContext sslContext =
-                    SslContext.newServerContext(
-                    SslProvider.JDK,
-                    null,
-                    certFile,
-                    keyFile,
-                    keyPassword,
-                    ciphers,
-                    null,
-                    0,
-                    0);
-            return new SslHandlerFactory() {
-                @Override
-                public SslHandler newHandler() {
-                    SessionAwareSslHandler handler =
-                            new SessionAwareSslHandler(
-                                    sslContext.newEngine(),
-                                    sslContext.bufferPool(),
-                                    JavaSslServerConfiguration.this);
-                    handler.setCloseOnSSLException(true);
-                    return handler;
-                }
-            };
-        }
-        catch (SSLException e) {
-            throw Throwables.propagate(e);
-        }
+//        try {
+//            SslContext sslContext = SslContext.newServerContextInternal(
+//                    SslProvider.JDK,
+//                    null,
+//                    certFile,
+//                    keyFile,
+//                    keyPassword,
+//                    ciphers,
+//                    null,
+//                    0,
+//                    0);
+//            return new SslHandlerFactory() {
+//                @Override
+//                public SslHandler newHandler() {
+//                    SessionAwareSslHandler handler =
+//                            new SessionAwareSslHandler(
+//                                    sslContext.newEngine(ByteBufAllocator.DEFAULT),
+//                                    sslContext.bufferPool(),
+//                                    JavaSslServerConfiguration.this);
+//                    handler.setCloseOnSSLException(true);
+//                    return handler;
+//                }
+//            };
+//        }
+//        catch (SSLException e) {
+//            throw Throwables.propagate(e);
+//        }
+        return null;
     }
 
     @Override

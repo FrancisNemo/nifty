@@ -97,9 +97,8 @@ public class Plain
         public NettyServerConfig get()
         {
             NettyServerConfigBuilder nettyConfigBuilder = new NettyServerConfigBuilder();
-            nettyConfigBuilder.getSocketChannelConfig().setTcpNoDelay(true);
-            nettyConfigBuilder.getSocketChannelConfig().setConnectTimeoutMillis(5000);
-            nettyConfigBuilder.getSocketChannelConfig().setTcpNoDelay(true);
+//            nettyConfigBuilder.getSocketChannelConfig().setTcpNoDelay(true);
+//            nettyConfigBuilder.getSocketChannelConfig().setConnectTimeoutMillis(5000);
             return nettyConfigBuilder.build();
         }
     }
