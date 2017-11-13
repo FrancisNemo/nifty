@@ -33,8 +33,7 @@ import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 import org.apache.tomcat.jni.SessionTicketKey;
-import org.jboss.netty.channel.group.DefaultChannelGroup;
-import org.jboss.netty.handler.ssl.SslHandler;
+
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;

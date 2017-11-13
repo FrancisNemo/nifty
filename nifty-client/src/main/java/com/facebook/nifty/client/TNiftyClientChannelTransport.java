@@ -21,14 +21,15 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.Queues;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import org.apache.thrift.TException;
 import org.apache.thrift.TServiceClient;
 import org.apache.thrift.protocol.TMessage;
 import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
-import org.jboss.netty.buffer.ChannelBuffer;
-import org.jboss.netty.buffer.ChannelBuffers;
+
 
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
@@ -57,7 +58,7 @@ public class TNiftyClientChannelTransport extends TTransport
 
         this.methodNameToOneWay = newHashMap();
         this.requestBufferTransport = new TChannelBufferOutputTransport();
-        this.responseBufferTransport = new TChannelBufferInputTransport(ChannelBuffers.buffer(0));
+        this.responseBufferTransport = new TChannelBufferInputTransport(Unpooled.buffer(0));
         this.queuedResponses = Queues.newLinkedBlockingQueue();
     }
 
@@ -92,10 +93,10 @@ public class TNiftyClientChannelTransport extends TTransport
                 // wait for the next queued response to arrive, and point our response transport
                 // to that.
                 ResponseListener listener = queuedResponses.take();
-                ChannelBuffer response = listener.getResponse().get();
+                ByteBuf response = listener.getResponse().get();
 
                 // Ensure the response buffer is not zero-sized
-                checkState(response.readable(), "Received an empty response");
+                checkState(response.isReadable(), "Received an empty response");
 
                 responseBufferTransport.setInputBuffer(response);
             }
@@ -190,7 +191,7 @@ public class TNiftyClientChannelTransport extends TTransport
 
     private static class ResponseListener implements NiftyClientChannel.Listener
     {
-        private final SettableFuture<ChannelBuffer> response;
+        private final SettableFuture<ByteBuf> response;
 
         private ResponseListener()
         {
@@ -203,7 +204,7 @@ public class TNiftyClientChannelTransport extends TTransport
         }
 
         @Override
-        public void onResponseReceived(ChannelBuffer response)
+        public void onResponseReceived(ByteBuf response)
         {
             this.response.set(response);
         }
@@ -214,7 +215,7 @@ public class TNiftyClientChannelTransport extends TTransport
             response.setException(new TTransportException(TTransportException.UNKNOWN, cause));
         }
 
-        public ListenableFuture<ChannelBuffer> getResponse()
+        public ListenableFuture<ByteBuf> getResponse()
         {
             return response;
         }

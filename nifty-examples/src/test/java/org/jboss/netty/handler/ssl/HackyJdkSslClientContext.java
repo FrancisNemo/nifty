@@ -15,8 +15,7 @@
  */
 package org.jboss.netty.handler.ssl;
 
-import org.jboss.netty.buffer.ChannelBuffer;
-import org.jboss.netty.buffer.ChannelBufferInputStream;
+import io.netty.handler.ssl.JdkSslContext;
 
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLContext;
@@ -105,7 +104,7 @@ public final class HackyJdkSslClientContext extends JdkSslContext {
                 ks.load(null, null);
                 CertificateFactory cf = CertificateFactory.getInstance("X.509");
 
-                for (ChannelBuffer buf: PemReader.readCertificates(certChainFile)) {
+                for (ByteBuf buf: PemReader.readCertificates(certChainFile)) {
                     X509Certificate cert = (X509Certificate) cf.generateCertificate(new ChannelBufferInputStream(buf));
                     X500Principal principal = cert.getSubjectX500Principal();
                     ks.setCertificateEntry(principal.getName("RFC2253"), cert);

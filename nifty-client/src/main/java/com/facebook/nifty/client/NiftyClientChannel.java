@@ -17,9 +17,9 @@ package com.facebook.nifty.client;
 
 import com.facebook.nifty.duplex.TDuplexProtocolFactory;
 import io.airlift.units.Duration;
+import io.netty.channel.Channel;
 import org.apache.thrift.TException;
-import org.jboss.netty.buffer.ChannelBuffer;
-import org.jboss.netty.channel.Channel;
+
 
 import javax.annotation.Nullable;
 

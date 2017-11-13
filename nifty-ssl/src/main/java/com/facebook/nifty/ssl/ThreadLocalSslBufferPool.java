@@ -22,7 +22,7 @@ import java.util.concurrent.BlockingQueue;
 
 import static com.facebook.nifty.core.NettyConfigBuilderBase.DEFAULT_WORKER_THREAD_COUNT;
 
-public class ThreadLocalSslBufferPool extends SslBufferPool {
+public class ThreadLocalSslBufferPool {
     private final ThreadLocal<NonBlockingSslBufferPool> pool;
 
     public ThreadLocalSslBufferPool(int maxPoolSize, boolean preallocate, boolean allocateDirect) {
@@ -45,25 +45,25 @@ public class ThreadLocalSslBufferPool extends SslBufferPool {
         };
     }
 
-    @Override
-    public int getMaxPoolSize() {
-        return pool.get().getMaxPoolSize();
-    }
-
-    @Override
-    public int getUnacquiredPoolSize() {
-        return pool.get().getUnacquiredPoolSize();
-    }
-
-    @Override
-    public ByteBuffer acquireBuffer() {
-        return pool.get().acquireBuffer();
-    }
-
-    @Override
-    public void releaseBuffer(ByteBuffer buffer) {
-        pool.get().releaseBuffer(buffer);
-    }
+//    @Override
+//    public int getMaxPoolSize() {
+//        return pool.get().getMaxPoolSize();
+//    }
+//
+//    @Override
+//    public int getUnacquiredPoolSize() {
+//        return pool.get().getUnacquiredPoolSize();
+//    }
+//
+//    @Override
+//    public ByteBuffer acquireBuffer() {
+//        return pool.get().acquireBuffer();
+//    }
+//
+//    @Override
+//    public void releaseBuffer(ByteBuffer buffer) {
+//        pool.get().releaseBuffer(buffer);
+//    }
 
     public static int getBufferSize() { return NonBlockingSslBufferPool.getBufferSize(); }
 

@@ -17,6 +17,7 @@ package com.facebook.nifty.ssl;
 
 import com.google.common.collect.ImmutableList;
 import io.netty.handler.ssl.OpenSslEngine;
+import io.netty.handler.ssl.SslHandler;
 import org.apache.tomcat.jni.Pool;
 import org.apache.tomcat.jni.SSL;
 import org.apache.tomcat.jni.SSLContext;
@@ -98,11 +99,11 @@ public final class NiftyOpenSslServerContext implements SslHandlerFactory {
         int maxSslBufferBytes = sslServerConfiguration.maxSslBufferBytes;
         boolean preallocateSslBuffer = sslServerConfiguration.preallocateSslBuffer;
         boolean threadLocalSslBuffer = sslServerConfiguration.threadLocalSslBuffer;
-        if (threadLocalSslBuffer) {
-            bufferPool = new ThreadLocalSslBufferPool(maxSslBufferBytes, preallocateSslBuffer, true);
-        } else {
-        //    bufferPool = new SslBufferPool(maxSslBufferBytes, preallocateSslBuffer, true);
-        }
+//        if (threadLocalSslBuffer) {
+//            bufferPool = new ThreadLocalSslBufferPool(maxSslBufferBytes, preallocateSslBuffer, true);
+//        } else {
+//            bufferPool = new SslBufferPool(maxSslBufferBytes, preallocateSslBuffer, true);
+//        }
 
         // Create a new SSL_CTX and configure it.
         boolean success = false;
@@ -288,7 +289,7 @@ public final class NiftyOpenSslServerContext implements SslHandlerFactory {
         SSLContext.setSessionCacheTimeout(ctx, sessionTimeoutSeconds);
     }
 
-    @Override
+//    @Override
 //    public SslHandler newHandler() {
 //        SslHandler handler = new BetterSslHandler(newEngine(), bufferPool, sslServerConfiguration);
 //        handler.setCloseOnSSLException(true);
@@ -312,5 +313,10 @@ public final class NiftyOpenSslServerContext implements SslHandlerFactory {
         if (aprPool != 0) {
             Pool.destroy(aprPool);
         }
+    }
+
+    @Override
+    public SslHandler newHandler() {
+        return null;
     }
 }

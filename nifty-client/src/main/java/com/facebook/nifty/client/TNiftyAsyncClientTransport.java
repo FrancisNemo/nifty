@@ -15,23 +15,15 @@
  */
 package com.facebook.nifty.client;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import io.netty.channel.*;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
-import org.jboss.netty.buffer.ChannelBuffer;
-import org.jboss.netty.buffer.ChannelBuffers;
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelDownstreamHandler;
-import org.jboss.netty.channel.ChannelEvent;
-import org.jboss.netty.channel.ChannelFuture;
-import org.jboss.netty.channel.ChannelFutureListener;
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.ChannelStateEvent;
-import org.jboss.netty.channel.ChannelUpstreamHandler;
-import org.jboss.netty.channel.ExceptionEvent;
-import org.jboss.netty.channel.MessageEvent;
 
 import javax.annotation.concurrent.NotThreadSafe;
 import java.io.Closeable;
+import java.net.SocketAddress;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -40,19 +32,19 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  */
 @NotThreadSafe
 class TNiftyAsyncClientTransport extends TTransport
-        implements ChannelUpstreamHandler, ChannelDownstreamHandler, Closeable
+        implements ChannelInboundHandler, ChannelOutboundHandler, Closeable
 {
     private static final int DEFAULT_BUFFER_SIZE = 1024;
     // this is largely a guess. there shouldn't really be more than 2 write buffers at any given time.
     private static final int MAX_BUFFERS_IN_QUEUE = 3;
     private final Channel channel;
-    private final Queue<ChannelBuffer> writeBuffers;
+    private final Queue<ByteBuf> writeBuffers;
     private volatile TNiftyClientListener listener;
 
     public TNiftyAsyncClientTransport(Channel channel)
     {
         this.channel = channel;
-        this.writeBuffers = new ConcurrentLinkedQueue<ChannelBuffer>();
+        this.writeBuffers = new ConcurrentLinkedQueue<ByteBuf>();
     }
 
     public void setListener(TNiftyClientListener listener)
@@ -102,7 +94,7 @@ class TNiftyAsyncClientTransport extends TTransport
         // which is an async operation in netty. the future listener
         // down here will be invoked by Netty I/O thread.
         if (!writeBuffers.isEmpty()) {
-            final ChannelBuffer channelBuffer = writeBuffers.remove();
+            final ByteBuf channelBuffer = writeBuffers.remove();
             channel.write(channelBuffer).addListener(
                     new ChannelFutureListener()
                     {
@@ -122,57 +114,152 @@ class TNiftyAsyncClientTransport extends TTransport
         }
     }
 
-    @Override
-    public void handleUpstream(ChannelHandlerContext ctx, ChannelEvent e)
-            throws Exception
-    {
-        if (e instanceof MessageEvent) {
-            messageReceived(ctx, (MessageEvent) e);
-        }
-        else if (e instanceof ChannelStateEvent) {
-            ChannelStateEvent evt = (ChannelStateEvent) e;
-            switch (evt.getState()) {
-                case OPEN:
-                    if (Boolean.FALSE.equals(evt.getValue())) {
-                        listener.onChannelClosedOrDisconnected(ctx.getChannel());
-                    }
-                    break;
-                case CONNECTED:
-                    if (evt.getValue() == null) {
-                        listener.onChannelClosedOrDisconnected(ctx.getChannel());
-                    }
-                    break;
-                default:
-                    break;
-            }
-        }
-        else if (e instanceof ExceptionEvent) {
-            listener.onExceptionEvent((ExceptionEvent) e);
-        }
-        ctx.sendUpstream(e);
-        // for all other stuff we drop it on the floor
-    }
-
-    private void messageReceived(ChannelHandlerContext ctx, MessageEvent e)
-    {
-        if (e.getMessage() instanceof ChannelBuffer && listener != null) {
-            listener.onFrameRead(ctx.getChannel(), (ChannelBuffer) e.getMessage());
-        }
-        // drop it
-    }
-
-    @Override
-    public void handleDownstream(ChannelHandlerContext ctx, ChannelEvent e)
-            throws Exception
-    {
-        ctx.sendDownstream(e);
-    }
-
-    public ChannelBuffer getWriteBuffer()
+//    @Override
+//    public void handleUpstream(ChannelHandlerContext ctx, ChannelEvent e)
+//            throws Exception
+//    {
+//        if (e instanceof MessageEvent) {
+//            messageReceived(ctx, (MessageEvent) e);
+//        }
+//        else if (e instanceof ChannelStateEvent) {
+//            ChannelStateEvent evt = (ChannelStateEvent) e;
+//            switch (evt.getState()) {
+//                case OPEN:
+//                    if (Boolean.FALSE.equals(evt.getValue())) {
+//                        listener.onChannelClosedOrDisconnected(ctx.getChannel());
+//                    }
+//                    break;
+//                case CONNECTED:
+//                    if (evt.getValue() == null) {
+//                        listener.onChannelClosedOrDisconnected(ctx.getChannel());
+//                    }
+//                    break;
+//                default:
+//                    break;
+//            }
+//        }
+//        else if (e instanceof ExceptionEvent) {
+//            listener.onExceptionEvent((ExceptionEvent) e);
+//        }
+//        ctx.sendUpstream(e);
+//        // for all other stuff we drop it on the floor
+//    }
+//
+//    private void messageReceived(ChannelHandlerContext ctx, MessageEvent e)
+//    {
+//        if (e.getMessage() instanceof ByteBuf && listener != null) {
+//            listener.onFrameRead(ctx.getChannel(), (ByteBuf) e.getMessage());
+//        }
+//        // drop it
+//    }
+//
+//    @Override
+//    public void handleDownstream(ChannelHandlerContext ctx, ChannelEvent e)
+//            throws Exception
+//    {
+//        ctx.sendDownstream(e);
+//    }
+//
+    public ByteBuf getWriteBuffer()
     {
         if (writeBuffers.isEmpty()) {
-            writeBuffers.add(ChannelBuffers.dynamicBuffer(DEFAULT_BUFFER_SIZE));
+            writeBuffers.add(Unpooled.buffer(DEFAULT_BUFFER_SIZE));
         }
         return writeBuffers.peek();
+    }
+
+    @Override
+    public void channelRegistered(ChannelHandlerContext channelHandlerContext) throws Exception {
+
+    }
+
+    @Override
+    public void channelUnregistered(ChannelHandlerContext channelHandlerContext) throws Exception {
+
+    }
+
+    @Override
+    public void channelActive(ChannelHandlerContext channelHandlerContext) throws Exception {
+
+    }
+
+    @Override
+    public void channelInactive(ChannelHandlerContext channelHandlerContext) throws Exception {
+
+    }
+
+    @Override
+    public void channelRead(ChannelHandlerContext channelHandlerContext, Object o) throws Exception {
+
+    }
+
+    @Override
+    public void channelReadComplete(ChannelHandlerContext channelHandlerContext) throws Exception {
+
+    }
+
+    @Override
+    public void userEventTriggered(ChannelHandlerContext channelHandlerContext, Object o) throws Exception {
+
+    }
+
+    @Override
+    public void channelWritabilityChanged(ChannelHandlerContext channelHandlerContext) throws Exception {
+
+    }
+
+    @Override
+    public void handlerAdded(ChannelHandlerContext channelHandlerContext) throws Exception {
+
+    }
+
+    @Override
+    public void handlerRemoved(ChannelHandlerContext channelHandlerContext) throws Exception {
+
+    }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext channelHandlerContext, Throwable throwable) throws Exception {
+
+    }
+
+    @Override
+    public void bind(ChannelHandlerContext channelHandlerContext, SocketAddress socketAddress, ChannelPromise channelPromise) throws Exception {
+
+    }
+
+    @Override
+    public void connect(ChannelHandlerContext channelHandlerContext, SocketAddress socketAddress, SocketAddress socketAddress1, ChannelPromise channelPromise) throws Exception {
+
+    }
+
+    @Override
+    public void disconnect(ChannelHandlerContext channelHandlerContext, ChannelPromise channelPromise) throws Exception {
+
+    }
+
+    @Override
+    public void close(ChannelHandlerContext channelHandlerContext, ChannelPromise channelPromise) throws Exception {
+
+    }
+
+    @Override
+    public void deregister(ChannelHandlerContext channelHandlerContext, ChannelPromise channelPromise) throws Exception {
+
+    }
+
+    @Override
+    public void read(ChannelHandlerContext channelHandlerContext) throws Exception {
+
+    }
+
+    @Override
+    public void write(ChannelHandlerContext channelHandlerContext, Object o, ChannelPromise channelPromise) throws Exception {
+
+    }
+
+    @Override
+    public void flush(ChannelHandlerContext channelHandlerContext) throws Exception {
+
     }
 }

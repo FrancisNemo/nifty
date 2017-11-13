@@ -15,16 +15,14 @@
  */
 package com.facebook.nifty.client;
 
-import org.jboss.netty.bootstrap.ClientBootstrap;
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelFuture;
-import org.jboss.netty.channel.ChannelPipelineFactory;
-import org.jboss.netty.util.Timer;
+
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
 
 public interface NiftyClientConnector<T extends RequestChannel> {
-    ChannelFuture connect(ClientBootstrap bootstrap);
+    //ChannelFuture connect(ClientBootstrap bootstrap);
 
     T newThriftClientChannel(Channel channel, NettyClientConfig clientConfig);
 
-    ChannelPipelineFactory newChannelPipelineFactory(int maxFrameSize, NettyClientConfig clientConfig);
+   // ChannelPipelineFactory newChannelPipelineFactory(int maxFrameSize, NettyClientConfig clientConfig);
 }

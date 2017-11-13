@@ -17,17 +17,12 @@ package com.facebook.nifty.client;
 
 import com.facebook.nifty.duplex.TDuplexProtocolFactory;
 import com.google.common.net.HttpHeaders;
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.handler.codec.http.*;
+import io.netty.util.Timer;
 import org.apache.thrift.transport.TTransportException;
-import org.jboss.netty.buffer.ChannelBuffer;
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelFuture;
-import org.jboss.netty.handler.codec.http.DefaultHttpRequest;
-import org.jboss.netty.handler.codec.http.HttpMethod;
-import org.jboss.netty.handler.codec.http.HttpRequest;
-import org.jboss.netty.handler.codec.http.HttpResponse;
-import org.jboss.netty.handler.codec.http.HttpResponseStatus;
-import org.jboss.netty.handler.codec.http.HttpVersion;
-import org.jboss.netty.util.Timer;
 
 import javax.annotation.concurrent.NotThreadSafe;
 import java.util.Map;
@@ -57,7 +52,7 @@ public class HttpClientChannel extends AbstractClientChannel {
     }
 
     @Override
-    protected ChannelBuffer extractResponse(Object message) throws TTransportException
+    protected ByteBuf extractResponse(Object message) throws TTransportException
     {
         if (!(message instanceof HttpResponse)) {
             return null;
@@ -70,9 +65,9 @@ public class HttpClientChannel extends AbstractClientChannel {
                     .getStatus().toString());
         }
 
-        ChannelBuffer content = httpResponse.getContent();
+        ByteBuf content = httpResponse.getContent();
 
-        if (!content.readable()) {
+        if (!content.isReadable()) {
             return null;
         }
 
@@ -80,7 +75,12 @@ public class HttpClientChannel extends AbstractClientChannel {
     }
 
     @Override
-    protected ChannelFuture writeRequest(ChannelBuffer request)
+    protected ChannelFuture writeRequest(ByteBuf request) {
+        return null;
+    }
+
+    @Override
+    protected ChannelFuture writeRequest(ByteBuf request)
     {
         HttpRequest httpRequest = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST,
                                                          endpointUri);

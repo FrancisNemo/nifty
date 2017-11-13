@@ -22,19 +22,13 @@ import com.google.common.net.HostAndPort;
 import com.google.common.util.concurrent.AbstractFuture;
 import com.google.common.util.concurrent.ListenableFuture;
 import io.airlift.units.Duration;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.util.Timer;
 import org.apache.thrift.TServiceClient;
 import org.apache.thrift.transport.TTransportException;
-import org.jboss.netty.bootstrap.ClientBootstrap;
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelFuture;
-import org.jboss.netty.channel.ChannelFutureListener;
-import org.jboss.netty.channel.group.ChannelGroup;
-import org.jboss.netty.channel.group.DefaultChannelGroup;
-import org.jboss.netty.channel.socket.nio.NioClientBossPool;
-import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
-import org.jboss.netty.channel.socket.nio.NioWorkerPool;
-import org.jboss.netty.util.ThreadNameDeterminer;
-import org.jboss.netty.util.Timer;
+
 
 import javax.annotation.Nullable;
 import java.io.Closeable;
@@ -57,9 +51,7 @@ public class NiftyClient implements Closeable
     private final NettyClientConfig nettyClientConfig;
     private final ExecutorService bossExecutor;
     private final ExecutorService workerExecutor;
-    private final NioClientSocketChannelFactory channelFactory;
     private final HostAndPort defaultSocksProxyAddress;
-    private final ChannelGroup allChannels = new DefaultChannelGroup();
     private final Timer timer;
 
     /**
@@ -82,10 +74,10 @@ public class NiftyClient implements Closeable
         int bossThreadCount = nettyClientConfig.getBossThreadCount();
         int workerThreadCount = nettyClientConfig.getWorkerThreadCount();
 
-        NioWorkerPool workerPool = new NioWorkerPool(workerExecutor, workerThreadCount, ThreadNameDeterminer.CURRENT);
-        NioClientBossPool bossPool = new NioClientBossPool(bossExecutor, bossThreadCount, timer, ThreadNameDeterminer.CURRENT);
-
-        this.channelFactory = new NioClientSocketChannelFactory(bossPool, workerPool);
+//        NioWorkerPool workerPool = new NioWorkerPool(workerExecutor, workerThreadCount, ThreadNameDeterminer.CURRENT);
+//        NioClientBossPool bossPool = new NioClientBossPool(bossExecutor, bossThreadCount, timer, ThreadNameDeterminer.CURRENT);
+//
+//        this.channelFactory = new NioClientSocketChannelFactory(bossPool, workerPool);
     }
 
     public <T extends NiftyClientChannel> ListenableFuture<T> connectAsync(
@@ -177,7 +169,7 @@ public class NiftyClient implements Closeable
         bootstrap.setOptions(nettyClientConfig.getBootstrapOptions());
 
         if (connectTimeout != null) {
-            bootstrap.setOption("connectTimeoutMillis", connectTimeout.toMillis());
+            bootstrap.Option("connectTimeoutMillis", connectTimeout.toMillis());
         }
 
         bootstrap.setPipelineFactory(clientChannelConnector.newChannelPipelineFactory(maxFrameSize, nettyClientConfig));

@@ -15,13 +15,6 @@
  */
 package com.facebook.nifty.client.socks;
 
-import org.jboss.netty.buffer.ChannelBuffer;
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.ChannelPipeline;
-import org.jboss.netty.channel.ChannelPipelineFactory;
-import org.jboss.netty.channel.ExceptionEvent;
-import org.jboss.netty.channel.MessageEvent;
-import org.jboss.netty.channel.SimpleChannelHandler;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -51,8 +44,8 @@ public class Socks4HandshakeHandler extends SimpleChannelHandler
             throws Exception
     {
         channelFuture.setChannel(ctx.getChannel());
-        if (e.getMessage() instanceof ChannelBuffer) {
-            ChannelBuffer msg = (ChannelBuffer) e.getMessage();
+        if (e.getMessage() instanceof ByteBuf) {
+            ByteBuf msg = (ByteBuf) e.getMessage();
             if (msg.readableBytes() < 8) {
                 channelFuture.setFailure(new IOException("invalid sock server reply length = " + msg.readableBytes()));
             }

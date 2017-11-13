@@ -18,12 +18,12 @@ package com.facebook.nifty.client;
 import com.facebook.nifty.core.ThriftUnframedDecoder;
 import com.facebook.nifty.duplex.TDuplexProtocolFactory;
 import com.google.common.net.HostAndPort;
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelPipeline;
-import org.jboss.netty.channel.ChannelPipelineFactory;
-import org.jboss.netty.channel.Channels;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelPipeline;
+
 
 import java.net.InetSocketAddress;
+import java.nio.channels.Channels;
 
 public class UnframedClientConnector extends AbstractClientConnector<UnframedClientChannel> {
     public UnframedClientConnector(InetSocketAddress address)
@@ -50,7 +50,7 @@ public class UnframedClientConnector extends AbstractClientConnector<UnframedCli
     public UnframedClientChannel newThriftClientChannel(Channel nettyChannel, NettyClientConfig clientConfig)
     {
         UnframedClientChannel channel = new UnframedClientChannel(nettyChannel, clientConfig.getTimer(), getProtocolFactory());
-        ChannelPipeline cp = nettyChannel.getPipeline();
+        ChannelPipeline cp = nettyChannel.pipeline();
         TimeoutHandler.addToPipeline(cp);
         cp.addLast("thriftHandler", channel);
         return channel;

@@ -15,8 +15,6 @@
  */
 package com.facebook.nifty.client.socks;
 
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.DefaultChannelFuture;
 
 /**
  * A channel future that allow channel to be set at a later time.

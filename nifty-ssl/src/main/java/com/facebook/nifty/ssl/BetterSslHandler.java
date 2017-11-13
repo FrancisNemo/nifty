@@ -15,9 +15,8 @@
  */
 package com.facebook.nifty.ssl;
 
-import org.jboss.netty.handler.ssl.OpenSslEngine;
-import org.jboss.netty.handler.ssl.SslBufferPool;
-import org.jboss.netty.handler.ssl.SslHandler;
+
+import io.netty.handler.ssl.OpenSslEngine;
 
 import javax.net.ssl.SSLEngine;
 
@@ -38,8 +37,9 @@ public class BetterSslHandler extends SessionAwareSslHandler {
         }
     };
 
-    public BetterSslHandler(SSLEngine engine, SslBufferPool bufferPool, SslServerConfiguration configuration) {
-        super(engine, bufferPool, configuration);
+    //TODO
+    public BetterSslHandler(SSLEngine engine, SslServerConfiguration configuration) {
+        super(engine);
         sslEngine = (OpenSslEngine) engine;
     }
 }

@@ -22,8 +22,6 @@ import com.google.common.base.Strings;
 import com.google.common.net.HostAndPort;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.Inject;
-import org.jboss.netty.channel.socket.nio.NioSocketChannelConfig;
-import org.jboss.netty.util.Timer;
 
 import java.lang.reflect.Proxy;
 import java.util.concurrent.ExecutorService;

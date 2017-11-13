@@ -60,7 +60,7 @@ public class SslPlaintextHandler extends ByteToMessageDecoder {
 //    }
 //
 //    @Override
-//    protected Object decode(ChannelHandlerContext ctx, Channel channel, ChannelBuffer buffer) throws Exception {
+//    protected Object decode(ChannelHandlerContext ctx, Channel channel, ByteBuf buffer) throws Exception {
 //        if (buffer.readableBytes() < 9) {
 //            return null;
 //        }
@@ -76,7 +76,7 @@ public class SslPlaintextHandler extends ByteToMessageDecoder {
 //
 //
 //    // Requires 9 bytes of input.
-//    private static boolean looksLikeTLS(ChannelBuffer buffer) {
+//    private static boolean looksLikeTLS(ByteBuf buffer) {
 //        // TLS starts as
 //        // 0: 0x16 - handshake protocol magic
 //        // 1: 0x03 - SSL version major

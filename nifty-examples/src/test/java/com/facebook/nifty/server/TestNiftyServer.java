@@ -32,7 +32,6 @@ import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
-import org.jboss.netty.channel.group.DefaultChannelGroup;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
@@ -70,10 +69,9 @@ public class TestNiftyServer
     private void startServer(final ThriftServerDefBuilder thriftServerDefBuilder)
     {
         server = new NettyServerTransport(thriftServerDefBuilder.build(),
-                                          NettyServerConfig.newBuilder().build(),
-                                          new DefaultChannelGroup());
+                                          NettyServerConfig.newBuilder().build());
         server.start();
-        port = ((InetSocketAddress)server.getServerChannel().getLocalAddress()).getPort();
+        port = 8080;
     }
 
     private ThriftServerDefBuilder getThriftServerDefBuilder()

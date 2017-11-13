@@ -15,17 +15,6 @@
  */
 package com.facebook.nifty.client.socks;
 
-import org.jboss.netty.bootstrap.ClientBootstrap;
-import org.jboss.netty.buffer.ChannelBuffer;
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelFactory;
-import org.jboss.netty.channel.ChannelFuture;
-import org.jboss.netty.channel.ChannelFutureListener;
-import org.jboss.netty.channel.ChannelPipeline;
-import org.jboss.netty.channel.ChannelPipelineFactory;
-import org.jboss.netty.channel.Channels;
-import org.jboss.netty.handler.codec.frame.FixedLengthFrameDecoder;
-
 import java.net.Inet4Address;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -136,7 +125,7 @@ public class Socks4ClientBootstrap extends ClientBootstrap
         return ((Socks4HandshakeHandler) channel.getPipeline().get("handshake")).getChannelFuture();
     }
 
-    private static ChannelBuffer createHandshake(InetSocketAddress address)
+    private static ByteBuf createHandshake(InetSocketAddress address)
     {
         if (address.getAddress() instanceof Inet4Address) {
             return createSocks4packet(address.getAddress(), address.getPort());

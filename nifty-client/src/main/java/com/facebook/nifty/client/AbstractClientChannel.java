@@ -19,31 +19,27 @@ import com.facebook.nifty.core.TChannelBufferInputTransport;
 import com.facebook.nifty.duplex.TDuplexProtocolFactory;
 import io.airlift.log.Logger;
 import io.airlift.units.Duration;
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.timeout.ReadTimeoutException;
+import io.netty.handler.timeout.WriteTimeoutException;
+import io.netty.util.Timeout;
+import io.netty.util.Timer;
+import io.netty.util.TimerTask;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TMessage;
 import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
-import org.jboss.netty.buffer.ChannelBuffer;
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelFuture;
-import org.jboss.netty.channel.ChannelFutureListener;
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.ChannelStateEvent;
-import org.jboss.netty.channel.Channels;
-import org.jboss.netty.channel.ExceptionEvent;
-import org.jboss.netty.channel.MessageEvent;
-import org.jboss.netty.channel.SimpleChannelHandler;
-import org.jboss.netty.channel.socket.nio.NioSocketChannel;
-import org.jboss.netty.handler.timeout.ReadTimeoutException;
-import org.jboss.netty.handler.timeout.WriteTimeoutException;
-import org.jboss.netty.util.Timeout;
-import org.jboss.netty.util.Timer;
-import org.jboss.netty.util.TimerTask;
+
 
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.NotThreadSafe;
 
+import java.nio.channels.Channels;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -63,10 +59,10 @@ public abstract class AbstractClientChannel extends SimpleChannelHandler impleme
 
     // Timeout for not receiving any data from the server
     private Duration readTimeout = null;
-
+    private Timer timer;
     private final Map<Integer, Request> requestMap = new HashMap<>();
     private volatile TException channelError;
-    private final Timer timer;
+
     private final TDuplexProtocolFactory protocolFactory;
 
     protected AbstractClientChannel(Channel nettyChannel, Timer timer, TDuplexProtocolFactory protocolFactory) {
@@ -86,9 +82,9 @@ public abstract class AbstractClientChannel extends SimpleChannelHandler impleme
         return protocolFactory;
     }
 
-    protected abstract ChannelBuffer extractResponse(Object message) throws TTransportException;
+    protected abstract ByteBuf extractResponse(Object message) throws TTransportException;
 
-    protected int extractSequenceId(ChannelBuffer messageBuffer)
+    protected int extractSequenceId(ByteBuf messageBuffer)
             throws TTransportException
     {
         try {
@@ -103,7 +99,7 @@ public abstract class AbstractClientChannel extends SimpleChannelHandler impleme
         }
     }
 
-    protected abstract ChannelFuture writeRequest(ChannelBuffer request);
+    protected abstract ChannelFuture writeRequest(ByteBuf request);
 
     public void close()
     {
@@ -166,7 +162,7 @@ public abstract class AbstractClientChannel extends SimpleChannelHandler impleme
     }
 
     @Override
-    public void sendAsynchronousRequest(final ChannelBuffer message,
+    public void sendAsynchronousRequest(final ByteBuf message,
                                         final boolean oneway,
                                         final Listener listener)
             throws TException
@@ -247,7 +243,7 @@ public abstract class AbstractClientChannel extends SimpleChannelHandler impleme
     public void messageReceived(ChannelHandlerContext ctx, MessageEvent e)
     {
         try {
-            ChannelBuffer response = extractResponse(e.getMessage());
+            ByteBuf response = extractResponse(e.getMessage());
 
             if (response != null) {
                 int sequenceId = extractSequenceId(response);
@@ -307,7 +303,7 @@ public abstract class AbstractClientChannel extends SimpleChannelHandler impleme
         }
     }
 
-    private void onResponseReceived(int sequenceId, ChannelBuffer response)
+    private void onResponseReceived(int sequenceId, ByteBuf response)
     {
         Request request = requestMap.remove(sequenceId);
         if (request == null) {
@@ -369,7 +365,7 @@ public abstract class AbstractClientChannel extends SimpleChannelHandler impleme
         }
     }
 
-    private void fireResponseReceivedCallback(Listener listener, ChannelBuffer response)
+    private void fireResponseReceivedCallback(Listener listener, ByteBuf response)
     {
         try {
             listener.onResponseReceived(response);

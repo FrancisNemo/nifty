@@ -17,7 +17,7 @@ package com.facebook.nifty.client;
 
 import com.facebook.nifty.ssl.SslClientConfiguration;
 import com.google.common.net.HostAndPort;
-import org.jboss.netty.util.Timer;
+import io.netty.util.Timer;
 
 import java.util.Map;
 import java.util.concurrent.ExecutorService;

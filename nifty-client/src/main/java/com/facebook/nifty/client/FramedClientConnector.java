@@ -17,13 +17,8 @@ package com.facebook.nifty.client;
 
 import com.facebook.nifty.duplex.TDuplexProtocolFactory;
 import com.google.common.net.HostAndPort;
+import io.netty.channel.Channel;
 
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelPipeline;
-import org.jboss.netty.channel.ChannelPipelineFactory;
-import org.jboss.netty.channel.Channels;
-import org.jboss.netty.handler.codec.frame.LengthFieldBasedFrameDecoder;
-import org.jboss.netty.handler.codec.frame.LengthFieldPrepender;
 
 import java.net.InetSocketAddress;
 
@@ -99,5 +94,10 @@ public class FramedClientConnector extends AbstractClientConnector<FramedClientC
                 return cp;
             }
         };
+    }
+
+    @Override
+    public FramedClientChannel newThriftClientChannel(Channel channel, NettyClientConfig clientConfig) {
+        return null;
     }
 }

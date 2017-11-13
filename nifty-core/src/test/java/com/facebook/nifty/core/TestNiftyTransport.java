@@ -20,7 +20,7 @@
 //import org.apache.thrift.protocol.TMessage;
 //import org.apache.thrift.protocol.TProtocol;
 //import org.apache.thrift.transport.TTransport;
-//import org.jboss.netty.buffer.ChannelBuffer;
+//import org.jboss.netty.buffer.ByteBuf;
 //import org.jboss.netty.buffer.ChannelBuffers;
 //import org.testng.annotations.Test;
 //
@@ -33,10 +33,10 @@
 //    @Test
 //    public void testReadByteCounter() throws TException
 //    {
-//        ChannelBuffer firstChunk = writeFirstChunk(new TChannelBufferOutputTransport()).getOutputBuffer();
+//        ByteBuf firstChunk = writeFirstChunk(new TChannelBufferOutputTransport()).getOutputBuffer();
 //        int firstChunkSize = firstChunk.readableBytes();
 //
-//        ChannelBuffer secondChunk = writeSecondChunk(new TChannelBufferOutputTransport()).getOutputBuffer();
+//        ByteBuf secondChunk = writeSecondChunk(new TChannelBufferOutputTransport()).getOutputBuffer();
 //        int secondChunkSize = secondChunk.readableBytes();
 //
 //        TNiftyTransport inputTransport = new TNiftyTransport(null,
@@ -55,10 +55,10 @@
 //    @Test
 //    public void testWriteByteCounter() throws TException
 //    {
-//        ChannelBuffer firstChunk = writeFirstChunk(new TChannelBufferOutputTransport()).getOutputBuffer();
+//        ByteBuf firstChunk = writeFirstChunk(new TChannelBufferOutputTransport()).getOutputBuffer();
 //        int firstChunkSize = firstChunk.readableBytes();
 //
-//        ChannelBuffer secondChunk = writeSecondChunk(new TChannelBufferOutputTransport()).getOutputBuffer();
+//        ByteBuf secondChunk = writeSecondChunk(new TChannelBufferOutputTransport()).getOutputBuffer();
 //        int secondChunkSize = secondChunk.readableBytes();
 //
 //        TNiftyTransport outputTransport = new TNiftyTransport(null, ChannelBuffers.buffer(0), ThriftTransportType.UNFRAMED);

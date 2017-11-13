@@ -64,8 +64,8 @@ public class ChannelStatistics extends ChannelHandlerAdapter implements NiftyMet
 //
 //        if (e instanceof UpstreamMessageEvent) {
 //            UpstreamMessageEvent ume = (UpstreamMessageEvent) e;
-//            if (ume.getMessage() instanceof ChannelBuffer) {
-//                ChannelBuffer cb = (ChannelBuffer) ume.getMessage();
+//            if (ume.getMessage() instanceof ByteBuf) {
+//                ByteBuf cb = (ByteBuf) ume.getMessage();
 //                int readableBytes = cb.readableBytes();
 //                //  compute stats here, bytes read from remote
 //                bytesRead.getAndAdd(readableBytes);
@@ -80,8 +80,8 @@ public class ChannelStatistics extends ChannelHandlerAdapter implements NiftyMet
 //    {
 //        if (e instanceof DownstreamMessageEvent) {
 //            DownstreamMessageEvent dme = (DownstreamMessageEvent) e;
-//            if (dme.getMessage() instanceof ChannelBuffer) {
-//                ChannelBuffer cb = (ChannelBuffer) dme.getMessage();
+//            if (dme.getMessage() instanceof ByteBuf) {
+//                ByteBuf cb = (ByteBuf) dme.getMessage();
 //                int readableBytes = cb.readableBytes();
 //                // compute stats here, bytes written to remote
 //                bytesWritten.getAndAdd(readableBytes);

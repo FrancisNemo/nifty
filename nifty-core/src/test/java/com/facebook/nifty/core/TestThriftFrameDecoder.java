@@ -114,9 +114,9 @@
 //                                      TChannelBufferOutputTransport transport,
 //                                      int chunkSize)
 //    {
-//        ChannelBuffer buffer = transport.getOutputBuffer();
-//        while (buffer.readable()) {
-//            ChannelBuffer chunk = buffer.readSlice(Math.min(chunkSize, buffer.readableBytes()));
+//        ByteBuf buffer = transport.getOutputBuffer();
+//        while (buffer.isReadable()) {
+//            ByteBuf chunk = buffer.readSlice(Math.min(chunkSize, buffer.readableBytes()));
 //            Channels.fireMessageReceived(channel, chunk);
 //        }
 //    }

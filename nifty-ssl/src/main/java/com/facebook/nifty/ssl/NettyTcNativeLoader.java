@@ -16,10 +16,11 @@
 package com.facebook.nifty.ssl;
 
 import com.google.common.base.Throwables;
+import io.netty.handler.ssl.OpenSsl;
+import io.netty.util.internal.NativeLibraryLoader;
 import org.apache.tomcat.jni.Library;
 import org.apache.tomcat.jni.SSL;
-import org.jboss.netty.handler.ssl.OpenSsl;
-import org.jboss.netty.util.internal.NativeLibraryLoader;
+
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
