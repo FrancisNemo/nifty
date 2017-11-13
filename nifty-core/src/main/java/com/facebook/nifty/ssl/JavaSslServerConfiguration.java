@@ -16,9 +16,10 @@
 package com.facebook.nifty.ssl;
 
 import com.google.common.base.Throwables;
-import org.jboss.netty.handler.ssl.SslContext;
-import org.jboss.netty.handler.ssl.SslHandler;
-import org.jboss.netty.handler.ssl.SslProvider;
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslHandler;
+import io.netty.handler.ssl.SslProvider;
+
 
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLException;

@@ -15,9 +15,10 @@
  */
 package com.facebook.nifty.core;
 
+import io.netty.buffer.ByteBuf;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
-import org.jboss.netty.buffer.ChannelBuffer;
+
 
 import javax.annotation.concurrent.NotThreadSafe;
 
@@ -29,17 +30,17 @@ import static com.google.common.base.Preconditions.checkState;
  * the message.
  *
  * Allows for reusing the same transport to read multiple messages via
- * {@link TChannelBufferInputTransport#setInputBuffer(org.jboss.netty.buffer.ChannelBuffer)}
+ * {@link TChannelBufferInputTransport#}
  */
 @NotThreadSafe
 public class TChannelBufferInputTransport extends TTransport {
-    private ChannelBuffer inputBuffer;
+    private ByteBuf inputBuffer;
 
     public TChannelBufferInputTransport() {
         this.inputBuffer = null;
     }
 
-    public TChannelBufferInputTransport(ChannelBuffer inputBuffer) {
+    public TChannelBufferInputTransport(ByteBuf inputBuffer) {
         setInputBuffer(inputBuffer);
     }
 
@@ -70,11 +71,11 @@ public class TChannelBufferInputTransport extends TTransport {
         throw new UnsupportedOperationException();
     }
 
-    public void setInputBuffer(ChannelBuffer inputBuffer) {
+    public void setInputBuffer(ByteBuf inputBuffer) {
         this.inputBuffer = inputBuffer;
     }
 
     public boolean isReadable() {
-        return inputBuffer.readable();
+        return inputBuffer.isReadable();
     }
 }

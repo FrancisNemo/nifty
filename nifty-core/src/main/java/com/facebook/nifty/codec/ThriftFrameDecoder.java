@@ -16,13 +16,14 @@
 package com.facebook.nifty.codec;
 
 import com.facebook.nifty.core.ThriftMessage;
-import org.jboss.netty.buffer.ChannelBuffer;
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.handler.codec.frame.FrameDecoder;
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.ByteToMessageDecoder;
 
-public abstract class ThriftFrameDecoder extends FrameDecoder
+
+public abstract class ThriftFrameDecoder extends ByteToMessageDecoder
 {
-    protected abstract ThriftMessage decode(ChannelHandlerContext ctx, Channel channel, ChannelBuffer buffer)
+    protected abstract ThriftMessage decode(ChannelHandlerContext ctx, Channel channel, ByteBuf buffer)
             throws Exception;
 }

@@ -15,9 +15,11 @@
  */
 package com.facebook.nifty.codec;
 
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelPromise;
 import org.apache.thrift.protocol.TProtocolFactory;
-import org.jboss.netty.channel.ChannelEvent;
-import org.jboss.netty.channel.ChannelHandlerContext;
+
+import java.net.SocketAddress;
 
 public class DefaultThriftFrameCodec implements ThriftFrameCodec
 {
@@ -30,15 +32,110 @@ public class DefaultThriftFrameCodec implements ThriftFrameCodec
         this.encoder = new DefaultThriftFrameEncoder(maxFrameSize);
     }
 
+//    @Override
+//    public void handleDownstream(ChannelHandlerContext ctx, ChannelEvent e) throws Exception
+//    {
+//        encoder.handleDownstream(ctx, e);
+//    }
+//
+//    @Override
+//    public void handleUpstream(ChannelHandlerContext ctx, ChannelEvent e) throws Exception
+//    {
+//        decoder.handleUpstream(ctx, e);
+//    }
+
     @Override
-    public void handleDownstream(ChannelHandlerContext ctx, ChannelEvent e) throws Exception
-    {
-        encoder.handleDownstream(ctx, e);
+    public void channelRegistered(ChannelHandlerContext channelHandlerContext) throws Exception {
+
     }
 
     @Override
-    public void handleUpstream(ChannelHandlerContext ctx, ChannelEvent e) throws Exception
-    {
-        decoder.handleUpstream(ctx, e);
+    public void channelUnregistered(ChannelHandlerContext channelHandlerContext) throws Exception {
+
+    }
+
+    @Override
+    public void channelActive(ChannelHandlerContext channelHandlerContext) throws Exception {
+
+    }
+
+    @Override
+    public void channelInactive(ChannelHandlerContext channelHandlerContext) throws Exception {
+
+    }
+
+    @Override
+    public void channelRead(ChannelHandlerContext channelHandlerContext, Object o) throws Exception {
+
+    }
+
+    @Override
+    public void channelReadComplete(ChannelHandlerContext channelHandlerContext) throws Exception {
+
+    }
+
+    @Override
+    public void userEventTriggered(ChannelHandlerContext channelHandlerContext, Object o) throws Exception {
+
+    }
+
+    @Override
+    public void channelWritabilityChanged(ChannelHandlerContext channelHandlerContext) throws Exception {
+
+    }
+
+    @Override
+    public void handlerAdded(ChannelHandlerContext channelHandlerContext) throws Exception {
+
+    }
+
+    @Override
+    public void handlerRemoved(ChannelHandlerContext channelHandlerContext) throws Exception {
+
+    }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext channelHandlerContext, Throwable throwable) throws Exception {
+
+    }
+
+    @Override
+    public void bind(ChannelHandlerContext channelHandlerContext, SocketAddress socketAddress, ChannelPromise channelPromise) throws Exception {
+
+    }
+
+    @Override
+    public void connect(ChannelHandlerContext channelHandlerContext, SocketAddress socketAddress, SocketAddress socketAddress1, ChannelPromise channelPromise) throws Exception {
+
+    }
+
+    @Override
+    public void disconnect(ChannelHandlerContext channelHandlerContext, ChannelPromise channelPromise) throws Exception {
+
+    }
+
+    @Override
+    public void close(ChannelHandlerContext channelHandlerContext, ChannelPromise channelPromise) throws Exception {
+
+    }
+
+    @Override
+    public void deregister(ChannelHandlerContext channelHandlerContext, ChannelPromise channelPromise) throws Exception {
+
+    }
+
+    @Override
+    public void read(ChannelHandlerContext channelHandlerContext) throws Exception {
+
+    }
+
+    @Override
+    public void write(ChannelHandlerContext channelHandlerContext, Object o, ChannelPromise channelPromise) throws Exception {
+
+    }
+
+    @Override
+    public void flush(ChannelHandlerContext channelHandlerContext) throws Exception {
+
     }
 }

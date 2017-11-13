@@ -17,14 +17,7 @@ package com.facebook.nifty.ssl;
 
 import com.google.common.base.Throwables;
 import io.airlift.log.Logger;
-import org.jboss.netty.channel.ChannelFuture;
-import org.jboss.netty.channel.ChannelFutureListener;
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.ChannelStateEvent;
-import org.jboss.netty.channel.Channels;
-import org.jboss.netty.channel.MessageEvent;
-import org.jboss.netty.handler.ssl.SslBufferPool;
-import org.jboss.netty.handler.ssl.SslHandler;
+import io.netty.handler.ssl.SslHandler;
 
 import javax.net.ssl.SSLEngine;
 
@@ -37,56 +30,62 @@ public class SessionAwareSslHandler extends SslHandler {
 
     private static final Logger log = Logger.get(SessionAwareSslHandler.class);
 
-    private final SslServerConfiguration sslServerConfiguration;
-
-    public SessionAwareSslHandler(SSLEngine engine, SslBufferPool pool, SslServerConfiguration configuration) {
-        super(engine, pool);
-        this.sslServerConfiguration = configuration;
+    public SessionAwareSslHandler(SSLEngine engine) {
+        super(engine);
     }
 
-    @Override
-    public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
-        registerHandshakeListener(ctx);
-        super.channelConnected(ctx, e);
-    }
+//    private final SslServerConfiguration sslServerConfiguration;
 
-    @Override
-    public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
-        if (e.getMessage() == SslPlaintextHandler.TLSConnectedEvent.SINGLETON) {
-            // SslPlaintextHandler does not know if we're going to be doing an SSL handshake until it receives
-            // some data and realizes that it's handling a TLS connection. If that happens, it sends us a special
-            // MessageEvent with payload == SslPlaintextHandler.TLSConnectedEvent.SINGLETON. This message is
-            // only intended for this class and should not be propagated up the handler chain.
-            registerHandshakeListener(ctx);
-        } else {
-            super.messageReceived(ctx, e);
-        }
-    }
+//
+//public SessionAwareSslHandler(SSLEngine engine, SslBufferPool pool, SslServerConfiguration configuration) {
+//        super(engine, pool);
+//        this.sslServerConfiguration = configuration;
+//    }
+//
+//    @Override
+//    public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
+//        registerHandshakeListener(ctx);
+//        super.channelConnected(ctx, e);
+//    }
+//
+//    @Override
+//    public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
+//        if (e.getMessage() == SslPlaintextHandler.TLSConnectedEvent.SINGLETON) {
+//            // SslPlaintextHandler does not know if we're going to be doing an SSL handshake until it receives
+//            // some data and realizes that it's handling a TLS connection. If that happens, it sends us a special
+//            // MessageEvent with payload == SslPlaintextHandler.TLSConnectedEvent.SINGLETON. This message is
+//            // only intended for this class and should not be propagated up the handler chain.
+//            registerHandshakeListener(ctx);
+//        } else {
+//            super.messageReceived(ctx, e);
+//        }
+//    }
+//
+//    private void registerHandshakeListener(final ChannelHandlerContext ctx) {
+//        handshake().addListener(new ChannelFutureListener() {
+//            @Override
+//            public void operationComplete(ChannelFuture future) throws Exception {
+//                if (future.isSuccess()) {
+//                    try {
+//                        SslSession sslSession = sslServerConfiguration.getSession(getEngine());
+//                        if (log.isDebugEnabled()) {
+//                            log.debug("Got SSL session after handshake: %s", sslSession.toString());
+//                        }
+//                        Channels.fireMessageReceived(ctx, sslSession);
+//                    } catch (Exception e) {
+//                        if (log.isDebugEnabled()) {
+//                            log.debug("Exception on handshake getting SSL session: %s", e.toString());
+//                        }
+//                        Throwables.propagate(e);
+//                    }
+//                } else {
+//                    if (log.isDebugEnabled()) {
+//                        log.debug("Handshake future failed");
+//                    }
+//                }
+//            }
+//        });
+//    }
 
-    private void registerHandshakeListener(final ChannelHandlerContext ctx) {
-        handshake().addListener(new ChannelFutureListener() {
-            @Override
-            public void operationComplete(ChannelFuture future) throws Exception {
-                if (future.isSuccess()) {
-                    try {
-                        SslSession sslSession = sslServerConfiguration.getSession(getEngine());
-                        if (log.isDebugEnabled()) {
-                            log.debug("Got SSL session after handshake: %s", sslSession.toString());
-                        }
-                        Channels.fireMessageReceived(ctx, sslSession);
-                    } catch (Exception e) {
-                        if (log.isDebugEnabled()) {
-                            log.debug("Exception on handshake getting SSL session: %s", e.toString());
-                        }
-                        Throwables.propagate(e);
-                    }
-                } else {
-                    if (log.isDebugEnabled()) {
-                        log.debug("Handshake future failed");
-                    }
-                }
-            }
-        });
 
-    }
 }

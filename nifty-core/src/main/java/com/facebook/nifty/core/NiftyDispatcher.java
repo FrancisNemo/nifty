@@ -22,21 +22,16 @@ import com.facebook.nifty.processor.NiftyProcessorFactory;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.util.Timeout;
+import io.netty.util.Timer;
+import io.netty.util.TimerTask;
 import org.apache.thrift.TApplicationException;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TMessage;
 import org.apache.thrift.protocol.TMessageType;
 import org.apache.thrift.protocol.TProtocol;
-import org.jboss.netty.buffer.ChannelBuffer;
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.ChannelStateEvent;
-import org.jboss.netty.channel.Channels;
-import org.jboss.netty.channel.ExceptionEvent;
-import org.jboss.netty.channel.MessageEvent;
-import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
-import org.jboss.netty.util.Timeout;
-import org.jboss.netty.util.Timer;
-import org.jboss.netty.util.TimerTask;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -57,7 +52,7 @@ import static com.google.common.base.Preconditions.checkState;
  * sends the requests in order. (Eventually this will be conditional on a flag in the thrift
  * message header for future async clients that can handle out-of-order responses).
  */
-public class NiftyDispatcher extends SimpleChannelUpstreamHandler
+public class NiftyDispatcher
 {
     private final NiftyProcessorFactory processorFactory;
     private final Executor exe;
@@ -81,27 +76,27 @@ public class NiftyDispatcher extends SimpleChannelUpstreamHandler
         this.queueTimeoutMillis = (def.getQueueTimeout() == null ? 0 : def.getQueueTimeout().toMillis());
     }
 
-    @Override
-    public void messageReceived(ChannelHandlerContext ctx, MessageEvent e)
-            throws Exception
-    {
-        if (e.getMessage() instanceof ThriftMessage) {
-            ThriftMessage message = (ThriftMessage) e.getMessage();
-            message.setProcessStartTimeMillis(System.currentTimeMillis());
-            checkResponseOrderingRequirements(ctx, message);
-
-            TNiftyTransport messageTransport = new TNiftyTransport(ctx.getChannel(), message);
-            TTransportPair transportPair = TTransportPair.fromSingleTransport(messageTransport);
-            TProtocolPair protocolPair = duplexProtocolFactory.getProtocolPair(transportPair);
-            TProtocol inProtocol = protocolPair.getInputProtocol();
-            TProtocol outProtocol = protocolPair.getOutputProtocol();
-
-            processRequest(ctx, message, messageTransport, inProtocol, outProtocol);
-        }
-        else {
-            ctx.sendUpstream(e);
-        }
-    }
+//    @Override
+//    public void messageReceived(ChannelHandlerContext ctx, MessageEvent e)
+//            throws Exception
+//    {
+//        if (e.getMessage() instanceof ThriftMessage) {
+//            ThriftMessage message = (ThriftMessage) e.getMessage();
+//            message.setProcessStartTimeMillis(System.currentTimeMillis());
+//            checkResponseOrderingRequirements(ctx, message);
+//
+//            TNiftyTransport messageTransport = new TNiftyTransport(ctx.channel(), message);
+//            TTransportPair transportPair = TTransportPair.fromSingleTransport(messageTransport);
+//            TProtocolPair protocolPair = duplexProtocolFactory.getProtocolPair(transportPair);
+//            TProtocol inProtocol = protocolPair.getInputProtocol();
+//            TProtocol outProtocol = protocolPair.getOutputProtocol();
+//
+//            processRequest(ctx, message, messageTransport, inProtocol, outProtocol);
+//        }
+//        else {
+//            ctx.fireChannelRead();
+//        }
+//    }
 
     private void checkResponseOrderingRequirements(ChannelHandlerContext ctx, ThriftMessage message)
     {
@@ -201,10 +196,10 @@ public class NiftyDispatcher extends SimpleChannelUpstreamHandler
                                                     "Task timed out while executing."
                                             );
                                             // Create a temporary transport to send the exception
-                                            ChannelBuffer duplicateBuffer = message.getBuffer().duplicate();
+                                            ByteBuf duplicateBuffer = message.getBuffer().duplicate();
                                             duplicateBuffer.resetReaderIndex();
                                             TNiftyTransport temporaryTransport = new TNiftyTransport(
-                                                    ctx.getChannel(),
+                                                    ctx.channel(),
                                                     duplicateBuffer,
                                                     message.getTransportType());
                                             TProtocolPair protocolPair = duplexProtocolFactory.getProtocolPair(
@@ -219,7 +214,7 @@ public class NiftyDispatcher extends SimpleChannelUpstreamHandler
                                 }, timeRemaining, TimeUnit.MILLISECONDS));
                             }
 
-                            ConnectionContext connectionContext = ConnectionContexts.getContext(ctx.getChannel());
+                            ConnectionContext connectionContext = ConnectionContexts.getContext(ctx.channel());
                             RequestContext requestContext = new NiftyRequestContext(connectionContext, inProtocol, outProtocol, messageTransport);
                             RequestContexts.setCurrentContext(requestContext);
                             processFuture = processorFactory.getProcessor(messageTransport).process(inProtocol, outProtocol, requestContext);
@@ -241,7 +236,7 @@ public class NiftyDispatcher extends SimpleChannelUpstreamHandler
                                         try {
                                             // Only write response if the client is still there and the task timeout
                                             // hasn't expired.
-                                            if (ctx.getChannel().isConnected() && responseSent.compareAndSet(false, true)) {
+                                            if (ctx.channel().isActive() && responseSent.compareAndSet(false, true)) {
                                                 ThriftMessage response = message.getMessageFactory().create(
                                                         messageTransport.getOutputBuffer());
                                                 writeResponse(ctx, response, requestSequenceId,
@@ -289,7 +284,7 @@ public class NiftyDispatcher extends SimpleChannelUpstreamHandler
             TProtocol inProtocol,
             TProtocol outProtocol)
     {
-        if (ctx.getChannel().isConnected()) {
+        if (ctx.channel().isActive()) {
             try {
                 TMessage message = inProtocol.readMessageBegin();
                 outProtocol.writeMessageBegin(new TMessage(message.name, TMessageType.EXCEPTION, message.seqid));
@@ -309,7 +304,7 @@ public class NiftyDispatcher extends SimpleChannelUpstreamHandler
 
     private void onDispatchException(ChannelHandlerContext ctx, Throwable t)
     {
-        Channels.fireExceptionCaught(ctx, t);
+        ctx.fireExceptionCaught(t);
         closeChannel(ctx);
     }
 
@@ -323,7 +318,7 @@ public class NiftyDispatcher extends SimpleChannelUpstreamHandler
         }
         else {
             // No ordering required, just write the response immediately
-            Channels.write(ctx.getChannel(), response);
+            ctx.channel().write(response);
             lastResponseWrittenId.incrementAndGet();
         }
     }
@@ -345,7 +340,7 @@ public class NiftyDispatcher extends SimpleChannelUpstreamHandler
                 // This response was next in line, write this response now, and see if
                 // there are others next in line that should be sent now as well.
                 do {
-                    Channels.write(ctx.getChannel(), response);
+                    ctx.channel().write(response);
                     lastResponseWrittenId.incrementAndGet();
                     ++currentResponseId;
                     response = responseMap.remove(currentResponseId);
@@ -362,30 +357,30 @@ public class NiftyDispatcher extends SimpleChannelUpstreamHandler
         }
     }
 
-    @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e)
-            throws Exception
-    {
-        // Any out of band exception are caught here and we tear down the socket
-        closeChannel(ctx);
-
-        // Send for logging
-        ctx.sendUpstream(e);
-    }
+//    @Override
+//    public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e)
+//            throws Exception
+//    {
+//        // Any out of band exception are caught here and we tear down the socket
+//        closeChannel(ctx);
+//
+//        // Send for logging
+//        ctx.fireChannelRead(e.);
+//    }
 
     private void closeChannel(ChannelHandlerContext ctx)
     {
-        if (ctx.getChannel().isOpen()) {
-            ctx.getChannel().close();
+        if (ctx.channel().isOpen()) {
+            ctx.channel().close();
         }
     }
 
-    @Override
-    public void channelOpen(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
-        // Reads always start out unblocked
-        DispatcherContext.unblockChannelReads(ctx);
-        super.channelOpen(ctx, e);
-    }
+//    @Override
+//    public void channelOpen(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
+//        // Reads always start out unblocked
+//        DispatcherContext.unblockChannelReads(ctx);
+//        super.channelOpen(ctx, e);
+//    }
 
     private static class DispatcherContext
     {
@@ -407,13 +402,14 @@ public class NiftyDispatcher extends SimpleChannelUpstreamHandler
             // from the socket before this ran may still be decoded and arrive at this handler. Thus
             // the limit on queued messages before we block reads is more of a guidance than a hard
             // limit.
-            ctx.getChannel().setReadable(false);
+
+            ctx.channel().config().setAutoRead(false);
         }
 
+        // Remember that reads are unblocked (there is no Channel.getReadable())
         public static void unblockChannelReads(ChannelHandlerContext ctx) {
-            // Remember that reads are unblocked (there is no Channel.getReadable())
             getDispatcherContext(ctx).readBlockedState = ReadBlockedState.NOT_BLOCKED;
-            ctx.getChannel().setReadable(true);
+            ctx.channel().config().setAutoRead(true);
         }
 
         public static void setResponseOrderingRequired(ChannelHandlerContext ctx, boolean required)
@@ -435,23 +431,24 @@ public class NiftyDispatcher extends SimpleChannelUpstreamHandler
 
         private static DispatcherContext getDispatcherContext(ChannelHandlerContext ctx)
         {
-            DispatcherContext dispatcherContext;
-            Object attachment = ctx.getAttachment();
+  //          DispatcherContext dispatcherContext;
+//            Object attachment = ctx.etAttachment();
+//
+//            if (attachment == null) {
+//                // No context was added yet, add one
+//                dispatcherContext = new DispatcherContext();
+//                ctx.setAttachment(dispatcherContext);
+//            }
+//            else if (!(attachment instanceof DispatcherContext)) {
+//                // There was a context, but it was the wrong type. This should never happen.
+//                throw new IllegalStateException("NiftyDispatcher handler context should be of type NiftyDispatcher.DispatcherContext");
+//            }
+//            else {
+//                dispatcherContext = (DispatcherContext) attachment;
+//            }
 
-            if (attachment == null) {
-                // No context was added yet, add one
-                dispatcherContext = new DispatcherContext();
-                ctx.setAttachment(dispatcherContext);
-            }
-            else if (!(attachment instanceof DispatcherContext)) {
-                // There was a context, but it was the wrong type. This should never happen.
-                throw new IllegalStateException("NiftyDispatcher handler context should be of type NiftyDispatcher.DispatcherContext");
-            }
-            else {
-                dispatcherContext = (DispatcherContext) attachment;
-            }
-
-            return dispatcherContext;
+  //          return dispatcherContext;
+            return null;
         }
 
         private enum ReadBlockedState {

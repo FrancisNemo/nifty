@@ -16,31 +16,46 @@
 package com.facebook.nifty.core;
 
 import com.facebook.nifty.ssl.SslSession;
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.ChannelStateEvent;
-import org.jboss.netty.channel.MessageEvent;
-import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandlerAdapter;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInboundHandlerAdapter;
 
-public class ConnectionContextHandler extends SimpleChannelUpstreamHandler
+public class ConnectionContextHandler extends ChannelInboundHandlerAdapter
 {
+    //TODO
+//    @Override
+//    public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception
+//    {
+//        super.channelConnected(ctx, e);
+//
+//        NiftyConnectionContext context = new NiftyConnectionContext();
+//        context.setRemoteAddress(ctx.getChannel().getRemoteAddress());
+//
+//        ctx.setAttachment(context);
+//    }
+//
+//    @Override
+//    public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
+//        if (e.getMessage() instanceof SslSession) {
+//            NiftyConnectionContext context = (NiftyConnectionContext) ctx.getAttachment();
+//            context.setSslSession((SslSession) e.getMessage());
+//        } else {
+//            super.messageReceived(ctx, e);
+//        }
+//    }
+
+
     @Override
-    public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception
-    {
-        super.channelConnected(ctx, e);
-
-        NiftyConnectionContext context = new NiftyConnectionContext();
-        context.setRemoteAddress(ctx.getChannel().getRemoteAddress());
-
-        ctx.setAttachment(context);
+    public void channelRead(ChannelHandlerContext ctx, Object msg) { // (2)
+        // Discard the received data silently.
+        ((ByteBuf) msg).release(); // (3)
     }
 
     @Override
-    public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
-        if (e.getMessage() instanceof SslSession) {
-            NiftyConnectionContext context = (NiftyConnectionContext) ctx.getAttachment();
-            context.setSslSession((SslSession) e.getMessage());
-        } else {
-            super.messageReceived(ctx, e);
-        }
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) { // (4)
+        // Close the connection when an exception is raised.
+        cause.printStackTrace();
+        ctx.close();
     }
 };

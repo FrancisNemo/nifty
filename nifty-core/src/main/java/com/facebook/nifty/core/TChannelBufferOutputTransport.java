@@ -15,10 +15,9 @@
  */
 package com.facebook.nifty.core;
 
+import io.netty.buffer.ByteBuf;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
-import org.jboss.netty.buffer.ChannelBuffer;
-import org.jboss.netty.buffer.ChannelBuffers;
 
 import javax.annotation.concurrent.NotThreadSafe;
 
@@ -38,7 +37,7 @@ public class TChannelBufferOutputTransport extends TTransport
     // reclaim some memory by reallocating it with half the current size
     private static final int UNDER_USE_THRESHOLD = 5;
 
-    private ChannelBuffer outputBuffer;
+    private ByteBuf outputBuffer;
     private final int minimumSize;
     private int bufferUnderUsedCounter;
 
@@ -110,7 +109,7 @@ public class TChannelBufferOutputTransport extends TTransport
         }
     }
 
-    public ChannelBuffer getOutputBuffer()
+    public ByteBuf getOutputBuffer()
     {
         return outputBuffer;
     }

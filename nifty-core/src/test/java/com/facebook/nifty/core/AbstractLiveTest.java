@@ -49,11 +49,11 @@ public class AbstractLiveTest
 
     protected FakeServer listen(NiftyProcessor processor) {
         // NiftyBootstrap.stop() will shutdown the threadpool for us
-        return new FakeServer(processor, Executors.newCachedThreadPool(), new DefaultChannelGroup());
+        return new FakeServer(processor, Executors.newCachedThreadPool());
     }
 
-    protected FakeServer listen(NiftyProcessor processor, Executor taskExecutor, ChannelGroup group) {
-        return new FakeServer(processor, taskExecutor, group);
+    protected FakeServer listen(NiftyProcessor processor, Executor taskExecutor) {
+        return new FakeServer(processor, taskExecutor);
     }
 
     protected FakeClient connect(FakeServer server) throws IOException {
@@ -90,7 +90,7 @@ public class AbstractLiveTest
     protected static class FakeServer implements AutoCloseable {
         private final NiftyBootstrap nifty;
 
-        private FakeServer(NiftyProcessor processor, Executor taskExecutor, ChannelGroup group) {
+        private FakeServer(NiftyProcessor processor, Executor taskExecutor) {
             ThriftServerDef thriftServerDef =
                 new ThriftServerDefBuilder()
                 .withProcessor(processor)
@@ -100,8 +100,7 @@ public class AbstractLiveTest
 
             this.nifty = new NiftyBootstrap(
                             ImmutableSet.of(thriftServerDef),
-                            new NettyServerConfigBuilder().build(),
-                            group);
+                            new NettyServerConfigBuilder().build());
 
             nifty.start();
         }

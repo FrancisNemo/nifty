@@ -17,7 +17,7 @@ package com.facebook.nifty.ssl;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
-import org.jboss.netty.handler.ssl.SslHandler;
+import io.netty.handler.ssl.SslHandler;
 
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLException;

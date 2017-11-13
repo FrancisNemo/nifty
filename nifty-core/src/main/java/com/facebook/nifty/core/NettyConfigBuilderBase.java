@@ -16,14 +16,13 @@
 package com.facebook.nifty.core;
 
 import com.google.common.base.Preconditions;
-import org.jboss.netty.util.Timer;
+import io.netty.channel.EventLoopGroup;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
 
 /*
  * Hooks for configuring various parts of Netty.
@@ -38,9 +37,9 @@ public abstract class NettyConfigBuilderBase<T extends NettyConfigBuilderBase<T>
     private String niftyName;
     private int bossThreadCount = DEFAULT_BOSS_THREAD_COUNT;
     private int workerThreadCount = DEFAULT_WORKER_THREAD_COUNT;
-    private ExecutorService bossThreadExecutor;
-    private ExecutorService workerThreadExecutor;
-    private Timer timer;
+    private EventLoopGroup bossGroup;
+    private EventLoopGroup workerGroup;
+    //private Timer timer;
 
     public Map<String, Object> getBootstrapOptions()
     {
@@ -54,16 +53,16 @@ public abstract class NettyConfigBuilderBase<T extends NettyConfigBuilderBase<T>
      * @param timer
      * @return
      */
-    public T setTimer(Timer timer)
-    {
-        this.timer = timer;
-        return (T) this;
-    }
-
-    protected Timer getTimer()
-    {
-        return timer;
-    }
+//    public T setTimer(Timer timer)
+//    {
+//        this.timer = timer;
+//        return (T) this;
+//    }
+//
+//    protected Timer getTimer()
+//    {
+//        return timer;
+//    }
 
     /**
      * Sets an identifier which will be added to all thread created by the boss and worker
@@ -84,15 +83,15 @@ public abstract class NettyConfigBuilderBase<T extends NettyConfigBuilderBase<T>
         return niftyName;
     }
 
-    public T setBossThreadExecutor(ExecutorService bossThreadExecutor)
+    public T setBossThreadExecutor(EventLoopGroup bossGroup)
     {
-        this.bossThreadExecutor = bossThreadExecutor;
+        this.bossGroup = bossGroup;
         return (T) this;
     }
 
-    protected ExecutorService getBossExecutor()
+    protected EventLoopGroup getBossExecutor()
     {
-        return bossThreadExecutor;
+        return bossGroup;
     }
 
     /**
@@ -111,15 +110,15 @@ public abstract class NettyConfigBuilderBase<T extends NettyConfigBuilderBase<T>
         return bossThreadCount;
     }
 
-    public T setWorkerThreadExecutor(ExecutorService workerThreadExecutor)
+    public T setWorkerThreadExecutor(EventLoopGroup workerGroup)
     {
-        this.workerThreadExecutor = workerThreadExecutor;
+        this.workerGroup = workerGroup;
         return (T) this;
     }
 
-    protected ExecutorService getWorkerExecutor()
+    protected EventLoopGroup getWorkerExecutor()
     {
-        return workerThreadExecutor;
+        return workerGroup;
     }
 
     public T setWorkerThreadCount(int workerThreadCount)

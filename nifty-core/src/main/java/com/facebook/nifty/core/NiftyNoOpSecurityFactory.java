@@ -15,10 +15,9 @@
  */
 package com.facebook.nifty.core;
 
-import org.jboss.netty.channel.ChannelHandler;
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.ChannelStateEvent;
-import org.jboss.netty.channel.SimpleChannelHandler;
+
+import io.netty.channel.ChannelHandler;
+import io.netty.channel.ChannelHandlerContext;
 
 public class NiftyNoOpSecurityFactory implements NiftySecurityFactory
 {
@@ -27,7 +26,7 @@ public class NiftyNoOpSecurityFactory implements NiftySecurityFactory
         public void channelOpen(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception
         {
             super.channelOpen(ctx, e);
-            ctx.getPipeline().remove(this);
+            ctx.pipeline().remove(this);
         }
     };
 

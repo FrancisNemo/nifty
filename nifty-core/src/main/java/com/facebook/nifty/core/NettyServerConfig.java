@@ -16,42 +16,33 @@
 package com.facebook.nifty.core;
 
 import com.google.inject.ProvidedBy;
-import org.jboss.netty.util.Timer;
+import io.netty.channel.EventLoopGroup;
 
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
 
 @ProvidedBy(DefaultNettyServerConfigProvider.class)
 public class NettyServerConfig
 {
     private final Map<String, Object> bootstrapOptions;
-    private final Timer timer;
-    private final ExecutorService bossExecutor;
+    private final EventLoopGroup bossExecutor;
     private final int bossThreadCount;
-    private final ExecutorService workerExecutor;
+    private final EventLoopGroup workerExecutor;
     private final int workerThreadCount;
 
     public NettyServerConfig(Map<String, Object> bootstrapOptions,
-                             Timer timer,
-                             ExecutorService bossExecutor,
+                             EventLoopGroup bossExecutor,
                              int bossThreadCount,
-                             ExecutorService workerExecutor,
+                             EventLoopGroup workerExecutor,
                              int workerThreadCount)
     {
         this.bootstrapOptions = bootstrapOptions;
-        this.timer = timer;
         this.bossExecutor = bossExecutor;
         this.bossThreadCount = bossThreadCount;
         this.workerExecutor = workerExecutor;
         this.workerThreadCount = workerThreadCount;
     }
 
-    public Timer getTimer()
-    {
-        return timer;
-    }
-
-    public ExecutorService getBossExecutor()
+    public EventLoopGroup getBossExecutor()
     {
         return bossExecutor;
     }
@@ -66,7 +57,7 @@ public class NettyServerConfig
         return bossThreadCount;
     }
 
-    public ExecutorService getWorkerExecutor()
+    public EventLoopGroup getWorkerExecutor()
     {
         return workerExecutor;
     }

@@ -18,15 +18,11 @@ package com.facebook.nifty.guice;
 import com.facebook.nifty.core.NettyServerConfig;
 import com.facebook.nifty.core.ThriftServerDef;
 import com.google.inject.AbstractModule;
-import com.google.inject.Provides;
 import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.Multibinder;
 import com.google.inject.util.Providers;
-import org.jboss.netty.channel.group.ChannelGroup;
-import org.jboss.netty.channel.group.DefaultChannelGroup;
 
 import javax.inject.Provider;
-import javax.inject.Singleton;
 
 public abstract class NiftyModule extends AbstractModule
 {
@@ -36,13 +32,6 @@ public abstract class NiftyModule extends AbstractModule
     protected void configure()
     {
         configureNifty();
-    }
-
-    @Provides
-    @Singleton
-    public ChannelGroup getChannelGroup()
-    {
-        return new DefaultChannelGroup();
     }
 
     public NiftyModule useDefaultNettyServerConfig()

@@ -15,7 +15,8 @@
  */
 package com.facebook.nifty.ssl;
 
-import org.jboss.netty.handler.ssl.SslHandler;
+
+import io.netty.handler.ssl.SslHandler;
 
 /**
  * A Factory that returns a handler.

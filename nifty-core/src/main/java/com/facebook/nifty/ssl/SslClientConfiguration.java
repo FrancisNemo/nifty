@@ -16,8 +16,8 @@
 package com.facebook.nifty.ssl;
 
 import com.google.common.base.Throwables;
-import org.jboss.netty.handler.ssl.SslContext;
-import org.jboss.netty.handler.ssl.SslHandler;
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslHandler;
 
 import javax.net.ssl.SSLException;
 import java.io.File;
@@ -75,20 +75,20 @@ public class SslClientConfiguration {
 
     public SslClientConfiguration(Builder builder) {
         if (builder.clientContext == null) {
-            try {
-                clientContext =
-                    SslContext.newClientContext(
-                        null,
-                        null,
-                        builder.caFile,
-                        null,
-                        builder.ciphers,
-                        null,
-                        builder.sessionCacheSize,
-                        builder.sessionTimeoutSeconds);
-            } catch (SSLException e) {
-                Throwables.propagate(e);
-            }
+//            try {
+//                clientContext =
+//                    SslContext.newClientContext(
+//                        null,
+//                        null,
+//                        builder.caFile,
+//                        null,
+//                        builder.ciphers,
+//                        null,
+//                        builder.sessionCacheSize,
+//                        builder.sessionTimeoutSeconds);
+//            } catch (SSLException e) {
+//                Throwables.propagate(e);
+//            }
         } else {
             clientContext = builder.clientContext;
         }

@@ -15,12 +15,12 @@
  */
 package com.facebook.nifty.core;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
+import io.netty.channel.Channel;
 import org.apache.thrift.TApplicationException;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
-import org.jboss.netty.buffer.ChannelBuffer;
-import org.jboss.netty.buffer.ChannelBuffers;
-import org.jboss.netty.channel.Channel;
 
 /**
  * Wraps incoming channel buffer into TTransport and provides a output buffer.
@@ -28,9 +28,9 @@ import org.jboss.netty.channel.Channel;
 public class TNiftyTransport extends TTransport
 {
     private final Channel channel;
-    private final ChannelBuffer in;
+    private final ByteBuf in;
     private final ThriftTransportType thriftTransportType;
-    private ChannelBuffer out;
+    private ByteBuf out;
     private static final int DEFAULT_OUTPUT_BUFFER_SIZE = 1024;
     private final int initialReaderIndex;
     private final int initialBufferPosition;
@@ -40,13 +40,13 @@ public class TNiftyTransport extends TTransport
     private TApplicationException tApplicationException;
 
     public TNiftyTransport(Channel channel,
-                           ChannelBuffer in,
+                           ByteBuf in,
                            ThriftTransportType thriftTransportType)
     {
         this.channel = channel;
         this.in = in;
         this.thriftTransportType = thriftTransportType;
-        this.out = ChannelBuffers.dynamicBuffer(DEFAULT_OUTPUT_BUFFER_SIZE);
+        this.out = ByteBufAllocator.DEFAULT.buffer(DEFAULT_OUTPUT_BUFFER_SIZE);
         this.initialReaderIndex = in.readerIndex();
 
         if (!in.hasArray()) {
@@ -123,12 +123,12 @@ public class TNiftyTransport extends TTransport
         out.writeBytes(bytes, offset, length);
     }
 
-    public ChannelBuffer getOutputBuffer()
+    public ByteBuf getOutputBuffer()
     {
         return out;
     }
 
-    public void setOutputBuffer(ChannelBuffer buf) {
+    public void setOutputBuffer(ByteBuf buf) {
         out = buf;
     }
 
@@ -151,7 +151,7 @@ public class TNiftyTransport extends TTransport
     }
 
     @Override
-    @edu.umd.cs.findbugs.annotations.SuppressWarnings("EI_EXPOSE_REP")
+    @SuppressWarnings("EI_EXPOSE_REP")
     public byte[] getBuffer()
     {
         return buffer;
