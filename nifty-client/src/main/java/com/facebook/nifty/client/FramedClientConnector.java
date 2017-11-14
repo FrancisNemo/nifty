@@ -18,6 +18,7 @@ package com.facebook.nifty.client;
 import com.facebook.nifty.duplex.TDuplexProtocolFactory;
 import com.google.common.net.HostAndPort;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelPipeline;
 
 
 import java.net.InetSocketAddress;
@@ -60,44 +61,49 @@ public class FramedClientConnector extends AbstractClientConnector<FramedClientC
     }
 
     @Override
-    public FramedClientChannel newThriftClientChannel(Channel nettyChannel, NettyClientConfig clientConfig)
-    {
-        FramedClientChannel channel = new FramedClientChannel(nettyChannel, clientConfig.getTimer(), getProtocolFactory());
-        ChannelPipeline cp = nettyChannel.getPipeline();
-        TimeoutHandler.addToPipeline(cp);
-        cp.addLast("thriftHandler", channel);
-        return channel;
-    }
-
-    @Override
-    public ChannelPipelineFactory newChannelPipelineFactory(final int maxFrameSize, NettyClientConfig clientConfig)
-    {
-        return new ChannelPipelineFactory() {
-            @Override
-            public ChannelPipeline getPipeline()
-                    throws Exception {
-                ChannelPipeline cp = Channels.pipeline();
-                TimeoutHandler.addToPipeline(cp);
-
-                cp.addLast("frameEncoder", new LengthFieldPrepender(LENGTH_FIELD_LENGTH));
-                cp.addLast(
-                        "frameDecoder",
-                        new LengthFieldBasedFrameDecoder(
-                                maxFrameSize,
-                                LENGTH_FIELD_OFFSET,
-                                LENGTH_FIELD_LENGTH,
-                                LENGTH_ADJUSTMENT,
-                                INITIAL_BYTES_TO_STRIP));
-                if (clientConfig.sslClientConfiguration() != null) {
-                    cp.addFirst("ssl", clientConfig.sslClientConfiguration().createHandler(address));
-                }
-                return cp;
-            }
-        };
-    }
-
-    @Override
     public FramedClientChannel newThriftClientChannel(Channel channel, NettyClientConfig clientConfig) {
         return null;
     }
+//
+//    @Override
+//    public FramedClientChannel newThriftClientChannel(Channel nettyChannel, NettyClientConfig clientConfig)
+//    {
+//        FramedClientChannel channel = new FramedClientChannel(nettyChannel, clientConfig.getTimer(), getProtocolFactory());
+//        ChannelPipeline cp = nettyChannel.pipeline();
+//        TimeoutHandler.addToPipeline(cp);
+//        cp.addLast("thriftHandler", channel);
+//        return channel;
+//    }
+//
+//    @Override
+//    public ChannelPipelineFactory newChannelPipelineFactory(final int maxFrameSize, NettyClientConfig clientConfig)
+//    {
+//        return new ChannelPipelineFactory() {
+//            @Override
+//            public ChannelPipeline getPipeline()
+//                    throws Exception {
+//                ChannelPipeline cp = Channels.pipeline();
+//                TimeoutHandler.addToPipeline(cp);
+//
+//                cp.addLast("frameEncoder", new LengthFieldPrepender(LENGTH_FIELD_LENGTH));
+//                cp.addLast(
+//                        "frameDecoder",
+//                        new LengthFieldBasedFrameDecoder(
+//                                maxFrameSize,
+//                                LENGTH_FIELD_OFFSET,
+//                                LENGTH_FIELD_LENGTH,
+//                                LENGTH_ADJUSTMENT,
+//                                INITIAL_BYTES_TO_STRIP));
+//                if (clientConfig.sslClientConfiguration() != null) {
+//                    cp.addFirst("ssl", clientConfig.sslClientConfiguration().createHandler(address));
+//                }
+//                return cp;
+//            }
+//        };
+//    }
+//
+//    @Override
+//    public FramedClientChannel newThriftClientChannel(Channel channel, NettyClientConfig clientConfig) {
+//        return null;
+//    }
 }

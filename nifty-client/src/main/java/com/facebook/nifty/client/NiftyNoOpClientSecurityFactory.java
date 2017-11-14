@@ -16,14 +16,10 @@
 //package com.facebook.nifty.client;
 //
 //import com.facebook.nifty.core.NiftySecurityHandlers;
-//import org.jboss.netty.channel.ChannelHandler;
-//import org.jboss.netty.channel.ChannelHandlerContext;
-//import org.jboss.netty.channel.ChannelStateEvent;
-//import org.jboss.netty.channel.SimpleChannelHandler;
 //
 //public class NiftyNoOpClientSecurityFactory implements NiftyClientSecurityFactory
 //{
-//    static final ChannelHandler noOpHandler = new SimpleChannelHandler() {
+//    static final ChannelHandler noOpHandler = new ChannelDuplexHandler() {
 //        @Override
 //        public void channelOpen(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception
 //        {

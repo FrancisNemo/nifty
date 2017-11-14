@@ -36,12 +36,12 @@ public final class TimeoutHandler implements ChannelInboundHandler, ChannelOutbo
             cp.addFirst(NAME, new TimeoutHandler());
         }
     }
-//
-//    public static TimeoutHandler findTimeoutHandler(ChannelPipeline cp)
-//    {
-//        return (TimeoutHandler) cp.get(NAME);
-//    }
-//
+
+    public static TimeoutHandler findTimeoutHandler(ChannelPipeline cp)
+    {
+        return (TimeoutHandler) cp.get(NAME);
+    }
+
 //    private TimeoutHandler()
 //    {
 //    }

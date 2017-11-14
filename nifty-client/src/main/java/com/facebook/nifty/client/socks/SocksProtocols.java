@@ -16,6 +16,8 @@
 package com.facebook.nifty.client.socks;
 
 import com.google.common.base.Charsets;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 
 
 import java.net.InetAddress;
@@ -40,7 +42,7 @@ public class SocksProtocols
         if (address == null) {
             throw new IllegalArgumentException("address is null");
         }
-        ByteBuf handshake = ChannelBuffers.dynamicBuffer(9);
+        ByteBuf handshake = Unpooled.buffer(9);
         handshake.writeByte(SOCKS_VERSION_4); // SOCKS version
         handshake.writeByte(CONNECT); // CONNECT
         handshake.writeShort(port); // port
@@ -55,7 +57,7 @@ public class SocksProtocols
             throw new IllegalArgumentException("hostName is null");
         }
         byte[] hostNameBytes = hostName.getBytes(Charsets.ISO_8859_1);
-        ByteBuf handshake = ChannelBuffers.dynamicBuffer(10 + hostNameBytes.length);
+        ByteBuf handshake = Unpooled.buffer(10 + hostNameBytes.length);
         handshake.writeByte(SOCKS_VERSION_4); // SOCKS version
         handshake.writeByte(CONNECT); // CONNECT
         handshake.writeShort(port); // port

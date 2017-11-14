@@ -16,6 +16,8 @@
 package com.facebook.nifty.core;
 
 import io.netty.channel.*;
+import io.netty.channel.group.ChannelGroup;
+
 import java.net.SocketAddress;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -31,13 +33,13 @@ public class ChannelStatistics extends ChannelHandlerAdapter implements NiftyMet
 
    public static final String NAME = ChannelStatistics.class.getSimpleName();
 
-    //    private final ChannelGroup allChannels;
+    private final ChannelGroup allChannels;
 //
 //
-//    public ChannelStatistics(ChannelGroup allChannels)
-//    {
-//        this.allChannels = allChannels;
-//    }
+    public ChannelStatistics(ChannelGroup allChannels)
+    {
+        this.allChannels = allChannels;
+    }
 //
 //    public void handleUpstream(ChannelHandlerContext ctx, ChannelEvent e)
 //            throws Exception

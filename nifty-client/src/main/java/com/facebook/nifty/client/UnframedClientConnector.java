@@ -56,21 +56,21 @@ public class UnframedClientConnector extends AbstractClientConnector<UnframedCli
         return channel;
     }
 
-    @Override
-    public ChannelPipelineFactory newChannelPipelineFactory(final int maxFrameSize, NettyClientConfig clientConfig)
-    {
-        return new ChannelPipelineFactory() {
-            @Override
-            public ChannelPipeline getPipeline()
-                    throws Exception {
-                ChannelPipeline cp = Channels.pipeline();
-                TimeoutHandler.addToPipeline(cp);
-                cp.addLast("thriftUnframedDecoder", new ThriftUnframedDecoder());
-                if (clientConfig.sslClientConfiguration() != null) {
-                    cp.addFirst("ssl", clientConfig.sslClientConfiguration().createHandler(address));
-                }
-                return cp;
-            }
-        };
-    }
+//    @Override
+//    public ChannelPipelineFactory newChannelPipelineFactory(final int maxFrameSize, NettyClientConfig clientConfig)
+//    {
+//        return new ChannelPipelineFactory() {
+//            @Override
+//            public ChannelPipeline getPipeline()
+//                    throws Exception {
+//                ChannelPipeline cp = Channels.pipeline();
+//                TimeoutHandler.addToPipeline(cp);
+//                cp.addLast("thriftUnframedDecoder", new ThriftUnframedDecoder());
+//                if (clientConfig.sslClientConfiguration() != null) {
+//                    cp.addFirst("ssl", clientConfig.sslClientConfiguration().createHandler(address));
+//                }
+//                return cp;
+//            }
+//        };
+//    }
 }

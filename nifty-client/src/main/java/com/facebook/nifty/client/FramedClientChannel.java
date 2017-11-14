@@ -20,6 +20,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.util.Timer;
+import org.apache.thrift.TException;
 
 import javax.annotation.concurrent.NotThreadSafe;
 
@@ -48,4 +49,13 @@ public class FramedClientChannel extends AbstractClientChannel {
         return getNettyChannel().write(request);
     }
 
+    @Override
+    public void executeInIoThread(Runnable runnable) {
+
+    }
+
+    @Override
+    public void sendAsynchronousRequest(ByteBuf request, boolean oneway, Listener listener) throws TException {
+
+    }
 }

@@ -22,6 +22,7 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.handler.codec.http.*;
 import io.netty.util.Timer;
+import org.apache.thrift.TException;
 import org.apache.thrift.transport.TTransportException;
 
 import javax.annotation.concurrent.NotThreadSafe;
@@ -44,6 +45,11 @@ public class HttpClientChannel extends AbstractClientChannel {
         this.underlyingNettyChannel = channel;
         this.hostName = hostName;
         this.endpointUri = endpointUri;
+    }
+
+    @Override
+    public void executeInIoThread(Runnable runnable) {
+
     }
 
     @Override
@@ -74,10 +80,10 @@ public class HttpClientChannel extends AbstractClientChannel {
         return content;
     }
 
-    @Override
-    protected ChannelFuture writeRequest(ByteBuf request) {
-        return null;
-    }
+//    @Override
+//    protected ChannelFuture writeRequest(ByteBuf request) {
+//        return null;
+//    }
 
     @Override
     protected ChannelFuture writeRequest(ByteBuf request)
@@ -107,4 +113,8 @@ public class HttpClientChannel extends AbstractClientChannel {
         this.headerDictionary = headers;
     }
 
+    @Override
+    public void sendAsynchronousRequest(ByteBuf request, boolean oneway, Listener listener) throws TException {
+
+    }
 }

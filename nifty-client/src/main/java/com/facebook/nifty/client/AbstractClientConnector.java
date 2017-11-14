@@ -18,6 +18,7 @@ package com.facebook.nifty.client;
 import com.facebook.nifty.client.socks.Socks4ClientBootstrap;
 import com.facebook.nifty.duplex.TDuplexProtocolFactory;
 import com.google.common.net.HostAndPort;
+import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
 import org.apache.thrift.protocol.TBinaryProtocol;
 
@@ -38,7 +39,7 @@ public abstract class AbstractClientConnector<T extends NiftyClientChannel>
     }
 
     @Override
-    public ChannelFuture connect(ClientBootstrap bootstrap)
+    public ChannelFuture connect(Bootstrap bootstrap)
     {
         if (bootstrap instanceof Socks4ClientBootstrap) {
             return bootstrap.connect(address);

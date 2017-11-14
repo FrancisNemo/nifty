@@ -22,6 +22,7 @@ import com.google.common.net.HostAndPort;
 import com.google.common.util.concurrent.AbstractFuture;
 import com.google.common.util.concurrent.ListenableFuture;
 import io.airlift.units.Duration;
+import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
@@ -165,19 +166,19 @@ public class NiftyClient implements Closeable
     {
         checkNotNull(clientChannelConnector, "clientChannelConnector is null");
 
-        ClientBootstrap bootstrap = createClientBootstrap(socksProxyAddress);
-        bootstrap.setOptions(nettyClientConfig.getBootstrapOptions());
+        Bootstrap bootstrap = createClientBootstrap(socksProxyAddress);
+//        bootstrap.setOptions(nettyClientConfig.getBootstrapOptions());
 
-        if (connectTimeout != null) {
-            bootstrap.Option("connectTimeoutMillis", connectTimeout.toMillis());
-        }
+//        if (connectTimeout != null) {
+//            bootstrap.Option("connectTimeoutMillis", connectTimeout.toMillis());
+//        }
 
-        bootstrap.setPipelineFactory(clientChannelConnector.newChannelPipelineFactory(maxFrameSize, nettyClientConfig));
+      //  bootstrap.setPipelineFactory(clientChannelConnector.newChannelPipelineFactory(maxFrameSize, nettyClientConfig));
         ChannelFuture nettyChannelFuture = clientChannelConnector.connect(bootstrap);
         nettyChannelFuture.addListener(new ChannelFutureListener() {
             @Override
             public void operationComplete(ChannelFuture future) throws Exception {
-                Channel channel = future.getChannel();
+                Channel channel = future.channel();
                 if (channel != null && channel.isOpen()) {
                     allChannels.add(channel);
                 }
@@ -301,23 +302,23 @@ public class NiftyClient implements Closeable
             throws TTransportException, InterruptedException
     {
         // TODO: implement send timeout for sync client
-        ClientBootstrap bootstrap = createClientBootstrap(socksProxyAddress);
-        bootstrap.setOptions(nettyClientConfig.getBootstrapOptions());
+        Bootstrap bootstrap = createClientBootstrap(socksProxyAddress);
+      //  bootstrap.option(nettyClientConfig.getBootstrapOptions());
 
-        if (connectTimeout != null) {
-            bootstrap.setOption("connectTimeoutMillis", connectTimeout.toMillis());
-        }
+//        if (connectTimeout != null) {
+//            bootstrap.option("connectTimeoutMillis", connectTimeout.toMillis());
+//        }
 
-        bootstrap.setPipelineFactory(new NiftyClientChannelPipelineFactory(maxFrameSize));
+   //     bootstrap.setPipelineFactory(new NiftyClientChannelPipelineFactory(maxFrameSize));
         ChannelFuture f = bootstrap.connect(addr);
         f.await();
-        Channel channel = f.getChannel();
-        if (f.getCause() != null) {
+        Channel channel = f.channel();
+        if (f != null) {
             String message = String.format("unable to connect to %s:%d %s",
                     addr.getHostName(),
                     addr.getPort(),
                     socksProxyAddress == null ? "" : "via socks proxy at " + socksProxyAddress);
-            throw new TTransportException(message, f.getCause());
+            throw new TTransportException(message);
         }
 
         if (f.isSuccess() && channel != null) {
@@ -326,7 +327,7 @@ public class NiftyClient implements Closeable
             }
 
             TNiftyClientTransport transport = new TNiftyClientTransport(channel, receiveTimeout);
-            channel.getPipeline().addLast("thrift", transport);
+            channel.pipeline().addLast("thrift", transport);
             return transport;
         }
 
@@ -335,7 +336,7 @@ public class NiftyClient implements Closeable
                 addr.getHostName(),
                 addr.getPort(),
                 socksProxyAddress == null ? "" : "via socks proxy at " + socksProxyAddress
-        ), f.getCause());
+        ));
     }
 
     @Override
@@ -345,19 +346,19 @@ public class NiftyClient implements Closeable
         // shutdown process
         timer.stop();
 
-        ShutdownUtil.shutdownChannelFactory(channelFactory,
-                                            bossExecutor,
-                                            workerExecutor,
-                                            allChannels);
+//        ShutdownUtil.shutdownChannelFactory(channelFactory,
+//                                            bossExecutor,
+//                                            workerExecutor,
+//                                            allChannels);
     }
 
-    private ClientBootstrap createClientBootstrap(@Nullable HostAndPort socksProxyAddress)
+    private Bootstrap createClientBootstrap(@Nullable HostAndPort socksProxyAddress)
     {
         if (socksProxyAddress != null) {
-            return new Socks4ClientBootstrap(channelFactory, toInetAddress(socksProxyAddress));
+            return new Socks4ClientBootstrap(toInetAddress(socksProxyAddress));
         }
         else {
-            return new ClientBootstrap(channelFactory);
+            return new Bootstrap();
         }
     }
 
@@ -382,9 +383,8 @@ public class NiftyClient implements Closeable
                 {
                     try {
                         if (future.isSuccess()) {
-                            Channel nettyChannel = future.getChannel();
-                            T channel = clientChannelConnector.newThriftClientChannel(nettyChannel,
-                                                                                      nettyClientConfig);
+                            Channel nettyChannel = future.channel();
+                            T channel = clientChannelConnector.newThriftClientChannel(nettyChannel, nettyClientConfig);
                             channel.setReceiveTimeout(receiveTimeout);
                             channel.setReadTimeout(readTimeout);
                             channel.setSendTimeout(sendTimeout);
@@ -396,7 +396,7 @@ public class NiftyClient implements Closeable
                             }
                         }
                         else {
-                            throw future.getCause();
+                            //throw future.getCause();
                         }
                     }
                     catch (Throwable t) {

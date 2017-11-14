@@ -16,11 +16,12 @@
 package com.facebook.nifty.client;
 
 
+import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 
 public interface NiftyClientConnector<T extends RequestChannel> {
-    //ChannelFuture connect(ClientBootstrap bootstrap);
+    ChannelFuture connect(Bootstrap bootstrap);
 
     T newThriftClientChannel(Channel channel, NettyClientConfig clientConfig);
 

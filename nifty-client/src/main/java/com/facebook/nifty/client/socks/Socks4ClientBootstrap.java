@@ -15,6 +15,12 @@
  */
 package com.facebook.nifty.client.socks;
 
+import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
+
 import java.net.Inet4Address;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -24,50 +30,44 @@ import static com.facebook.nifty.client.socks.SocksProtocols.createSocks4packet;
 import static com.google.common.net.InetAddresses.toAddrString;
 
 /**
- * ClientBootstrap for connecting via SOCKS proxy.
+ * Bootstrap for connecting via SOCKS proxy.
  * Currently only SOCK4 is supported since we don't do authentication anyway.
  * <br>
  * See http://en.wikipedia.org/wiki/SOCKS
  */
-public class Socks4ClientBootstrap extends ClientBootstrap
+public class Socks4ClientBootstrap extends Bootstrap
 {
     static final String FRAME_DECODER = "frameDecoder";
     static final String HANDSHAKE = "handshake";
 
     private final InetSocketAddress socksProxyAddr;
 
-    public Socks4ClientBootstrap(ChannelFactory channelFactory, InetSocketAddress socksProxyAddr)
-    {
-        super(channelFactory);
-        this.socksProxyAddr = socksProxyAddr;
-    }
-
     public Socks4ClientBootstrap(InetSocketAddress socksProxyAddr)
     {
+        super();
         this.socksProxyAddr = socksProxyAddr;
-        super.setPipeline(getPipeline());
     }
 
     /**
      * Hijack super class's pipelineFactory and return our own that
      * does the connect to SOCKS proxy and does the handshake.
      */
-    @Override
-    public ChannelPipelineFactory getPipelineFactory()
-    {
-        return new ChannelPipelineFactory()
-        {
-            @Override
-            public ChannelPipeline getPipeline()
-                    throws Exception
-            {
-                final ChannelPipeline cp = Channels.pipeline();
-                cp.addLast(FRAME_DECODER, new FixedLengthFrameDecoder(8));
-                cp.addLast(HANDSHAKE, new Socks4HandshakeHandler(Socks4ClientBootstrap.super.getPipelineFactory()));
-                return cp;
-            }
-        };
-    }
+//    @Override
+//    public ChannelPipelineFactory getPipelineFactory()
+//    {
+//        return new ChannelPipelineFactory()
+//        {
+//            @Override
+//            public ChannelPipeline getPipeline()
+//                    throws Exception
+//            {
+//                final ChannelPipeline cp = Channels.pipeline();
+//                cp.addLast(FRAME_DECODER, new FixedLengthFrameDecoder(8));
+//                cp.addLast(HANDSHAKE, new Socks4HandshakeHandler(Socks4ClientBootstrap.super.getPipelineFactory()));
+//                return cp;
+//            }
+//        };
+//    }
 
     /**
      * Hijack the connect method to connect to socks proxy and then
@@ -89,9 +89,9 @@ public class Socks4ClientBootstrap extends ClientBootstrap
             public void operationComplete(ChannelFuture future)
                     throws Exception
             {
-                settableChannelFuture.setChannel(future.getChannel());
+                settableChannelFuture.setChannel(future.channel());
                 if (future.isSuccess()) {
-                    socksConnect(future.getChannel(), (InetSocketAddress) remoteAddress).addListener(new ChannelFutureListener()
+                    socksConnect(future.channel(), (InetSocketAddress) remoteAddress).addListener(new ChannelFutureListener()
                     {
                         @Override
                         public void operationComplete(ChannelFuture innerFuture)
@@ -122,7 +122,7 @@ public class Socks4ClientBootstrap extends ClientBootstrap
     private static ChannelFuture socksConnect(Channel channel, InetSocketAddress remoteAddress)
     {
         channel.write(createHandshake(remoteAddress));
-        return ((Socks4HandshakeHandler) channel.getPipeline().get("handshake")).getChannelFuture();
+        return (ChannelFuture) ((Socks4HandshakeHandler) channel.pipeline().get("handshake")).getChannelFuture();
     }
 
     private static ByteBuf createHandshake(InetSocketAddress address)

@@ -16,6 +16,8 @@
 package com.facebook.nifty.client.socks;
 
 
+import io.netty.channel.Channel;
+
 /**
  * A channel future that allow channel to be set at a later time.
  */

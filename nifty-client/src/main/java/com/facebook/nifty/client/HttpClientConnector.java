@@ -17,6 +17,8 @@ package com.facebook.nifty.client;
 
 import com.facebook.nifty.duplex.TDuplexProtocolFactory;
 import com.google.common.net.HostAndPort;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelPipeline;
 
 
 import java.net.InetSocketAddress;
@@ -71,29 +73,29 @@ public class HttpClientConnector extends AbstractClientConnector<HttpClientChann
                                       getProtocolFactory(),
                                       endpointUri.getHost(),
                                       endpointUri.getPath());
-        channel.getNettyChannel().getPipeline().addLast("thriftHandler", channel);
+        channel.getNettyChannel().pipeline().addLast("thriftHandler", channel);
         return channel;
     }
 
-    @Override
-    public ChannelPipelineFactory newChannelPipelineFactory(final int maxFrameSize, NettyClientConfig clientConfig)
-    {
-        return new ChannelPipelineFactory()
-        {
-            @Override
-            public ChannelPipeline getPipeline()
-                    throws Exception
-            {
-                ChannelPipeline cp = Channels.pipeline();
-                cp.addLast("httpClientCodec", new HttpClientCodec());
-                cp.addLast("chunkAggregator", new HttpChunkAggregator(maxFrameSize));
-                if (clientConfig.sslClientConfiguration() != null) {
-                    cp.addFirst("ssl", clientConfig.sslClientConfiguration().createHandler(address));
-                }
-                return cp;
-            }
-        };
-    }
+//    @Override
+//    public ChannelPipelineFactory newChannelPipelineFactory(final int maxFrameSize, NettyClientConfig clientConfig)
+//    {
+//        return new ChannelPipelineFactory()
+//        {
+//            @Override
+//            public ChannelPipeline getPipeline()
+//                    throws Exception
+//            {
+//                ChannelPipeline cp = Channels.pipeline();
+//                cp.addLast("httpClientCodec", new HttpClientCodec());
+//                cp.addLast("chunkAggregator", new HttpChunkAggregator(maxFrameSize));
+//                if (clientConfig.sslClientConfiguration() != null) {
+//                    cp.addFirst("ssl", clientConfig.sslClientConfiguration().createHandler(address));
+//                }
+//                return cp;
+//            }
+//        };
+//    }
 
     @Override
     public String toString()

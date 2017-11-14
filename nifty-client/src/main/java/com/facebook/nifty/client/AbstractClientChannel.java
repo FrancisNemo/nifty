@@ -20,9 +20,7 @@ import com.facebook.nifty.duplex.TDuplexProtocolFactory;
 import io.airlift.log.Logger;
 import io.airlift.units.Duration;
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.*;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.timeout.ReadTimeoutException;
 import io.netty.handler.timeout.WriteTimeoutException;
@@ -47,7 +45,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 @NotThreadSafe
-public abstract class AbstractClientChannel extends SimpleChannelHandler implements
+public abstract class AbstractClientChannel extends ChannelDuplexHandler implements
         NiftyClientChannel {
     private static final Logger LOGGER = Logger.get(AbstractClientChannel.class);
 
@@ -154,117 +152,117 @@ public abstract class AbstractClientChannel extends SimpleChannelHandler impleme
         return channelError;
     }
 
-    @Override
-    public void executeInIoThread(Runnable runnable)
-    {
-        NioSocketChannel nioSocketChannel = (NioSocketChannel) getNettyChannel();
-        nioSocketChannel.getWorker().executeInIoThread(runnable, true);
-    }
+//    @Override
+//    public void executeInIoThread(Runnable runnable)
+//    {
+//        NioSocketChannel nioSocketChannel = (NioSocketChannel) getNettyChannel();
+//        nioSocketChannel.getWorker().executeInIoThread(runnable, true);
+//    }
 
-    @Override
-    public void sendAsynchronousRequest(final ByteBuf message,
-                                        final boolean oneway,
-                                        final Listener listener)
-            throws TException
-    {
-        final int sequenceId = extractSequenceId(message);
+//    @Override
+//    public void sendAsynchronousRequest(final ByteBuf message,
+//                                        final boolean oneway,
+//                                        final Listener listener)
+//            throws TException
+//    {
+//        final int sequenceId = extractSequenceId(message);
+//
+//        // Ensure channel listeners are always called on the channel's I/O thread
+//        executeInIoThread(new Runnable()
+//        {
+//            @Override
+//            public void run()
+//            {
+//                try {
+//                    final Request request = makeRequest(sequenceId, listener);
+//
+//                    if (!nettyChannel.isConnected()) {
+//                        fireChannelErrorCallback(listener, new TTransportException(TTransportException.NOT_OPEN, "Channel closed"));
+//                        return;
+//                    }
+//
+//                    if (hasError()) {
+//                        fireChannelErrorCallback(
+//                                listener,
+//                                new TTransportException(TTransportException.UNKNOWN, "Channel is in a bad state due to failing a previous request"));
+//                        return;
+//                    }
+//
+//                    ChannelFuture sendFuture = writeRequest(message);
+//                    queueSendTimeout(request);
+//
+//                    sendFuture.addListener(new ChannelFutureListener()
+//                    {
+//                        @Override
+//                        public void operationComplete(ChannelFuture future) throws Exception
+//                        {
+//                            messageSent(future, request, oneway);
+//                        }
+//                    });
+//                }
+//                catch (Throwable t) {
+//                    // onError calls all registered listeners in the requestMap, but this request
+//                    // may not be registered yet. So we try to remove it (to make sure we don't call
+//                    // the callback twice) and then manually make the callback for this request
+//                    // listener.
+//                    requestMap.remove(sequenceId);
+//                    fireChannelErrorCallback(listener, t);
+//
+//                    onError(t);
+//                }
+//            }
+//        });
+//    }
 
-        // Ensure channel listeners are always called on the channel's I/O thread
-        executeInIoThread(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                try {
-                    final Request request = makeRequest(sequenceId, listener);
+//    private void messageSent(ChannelFuture future, Request request, boolean oneway)
+//    {
+//        try {
+//            if (future.isSuccess()) {
+//                cancelRequestTimeouts(request);
+//                fireRequestSentCallback(request.getListener());
+//                if (oneway) {
+//                    retireRequest(request);
+//                } else {
+//                    queueReceiveAndReadTimeout(request);
+//                }
+//            } else {
+//                TTransportException transportException =
+//                        new TTransportException("Sending request failed",
+//                                                future.getCause());
+//                onError(transportException);
+//            }
+//        }
+//        catch (Throwable t) {
+//            onError(t);
+//        }
+//    }
 
-                    if (!nettyChannel.isConnected()) {
-                        fireChannelErrorCallback(listener, new TTransportException(TTransportException.NOT_OPEN, "Channel closed"));
-                        return;
-                    }
-
-                    if (hasError()) {
-                        fireChannelErrorCallback(
-                                listener,
-                                new TTransportException(TTransportException.UNKNOWN, "Channel is in a bad state due to failing a previous request"));
-                        return;
-                    }
-
-                    ChannelFuture sendFuture = writeRequest(message);
-                    queueSendTimeout(request);
-
-                    sendFuture.addListener(new ChannelFutureListener()
-                    {
-                        @Override
-                        public void operationComplete(ChannelFuture future) throws Exception
-                        {
-                            messageSent(future, request, oneway);
-                        }
-                    });
-                }
-                catch (Throwable t) {
-                    // onError calls all registered listeners in the requestMap, but this request
-                    // may not be registered yet. So we try to remove it (to make sure we don't call
-                    // the callback twice) and then manually make the callback for this request
-                    // listener.
-                    requestMap.remove(sequenceId);
-                    fireChannelErrorCallback(listener, t);
-
-                    onError(t);
-                }
-            }
-        });
-    }
-
-    private void messageSent(ChannelFuture future, Request request, boolean oneway)
-    {
-        try {
-            if (future.isSuccess()) {
-                cancelRequestTimeouts(request);
-                fireRequestSentCallback(request.getListener());
-                if (oneway) {
-                    retireRequest(request);
-                } else {
-                    queueReceiveAndReadTimeout(request);
-                }
-            } else {
-                TTransportException transportException =
-                        new TTransportException("Sending request failed",
-                                                future.getCause());
-                onError(transportException);
-            }
-        }
-        catch (Throwable t) {
-            onError(t);
-        }
-    }
-
-    @Override
-    public void messageReceived(ChannelHandlerContext ctx, MessageEvent e)
-    {
-        try {
-            ByteBuf response = extractResponse(e.getMessage());
-
-            if (response != null) {
-                int sequenceId = extractSequenceId(response);
-                onResponseReceived(sequenceId, response);
-            }
-            else {
-                ctx.sendUpstream(e);
-            }
-        }
-        catch (Throwable t) {
-            onError(t);
-        }
-    }
-
-    @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent event)
-            throws Exception
-    {
-        Throwable t = event.getCause();
-        onError(t);
-    }
+//    @Override
+//    public void messageReceived(ChannelHandlerContext ctx, MessageEvent e)
+//    {
+//        try {
+//            ByteBuf response = extractResponse(e.getMessage());
+//
+//            if (response != null) {
+//                int sequenceId = extractSequenceId(response);
+//                onResponseReceived(sequenceId, response);
+//            }
+//            else {
+//                ctx.sendUpstream(e);
+//            }
+//        }
+//        catch (Throwable t) {
+//            onError(t);
+//        }
+//    }
+//
+//    @Override
+//    public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent event)
+//            throws Exception
+//    {
+//        Throwable t = event.getCause();
+//        onError(t);
+//    }
 
     private Request makeRequest(int sequenceId, Listener listener)
     {
@@ -314,13 +312,13 @@ public abstract class AbstractClientChannel extends SimpleChannelHandler impleme
         }
     }
 
-    @Override
-    public void channelDisconnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception
-    {
-        if (!requestMap.isEmpty()) {
-            onError(new TTransportException("Client was disconnected by server"));
-        }
-    }
+//    @Override
+//    public void channelDisconnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception
+//    {
+//        if (!requestMap.isEmpty()) {
+//            onError(new TTransportException("Client was disconnected by server"));
+//        }
+//    }
 
     protected void onError(Throwable t)
     {
@@ -393,22 +391,23 @@ public abstract class AbstractClientChannel extends SimpleChannelHandler impleme
     private void onSendTimeoutFired(Request request)
     {
         cancelAllTimeouts();
-        WriteTimeoutException timeoutException = new WriteTimeoutException("Timed out waiting " + getSendTimeout() + " to send data to server");
-        fireChannelErrorCallback(request.getListener(), new TTransportException(TTransportException.TIMED_OUT, timeoutException));
+      //  WriteTimeoutException timeoutException = new WriteTimeoutException("Timed out waiting " + getSendTimeout() + " to send data to server");
+
+        fireChannelErrorCallback(request.getListener(), new TTransportException(TTransportException.TIMED_OUT, WriteTimeoutException.INSTANCE));
     }
 
     private void onReceiveTimeoutFired(Request request)
     {
         cancelAllTimeouts();
-        ReadTimeoutException timeoutException = new ReadTimeoutException("Timed out waiting " + getReceiveTimeout() + " to receive response");
-        fireChannelErrorCallback(request.getListener(), new TTransportException(TTransportException.TIMED_OUT, timeoutException));
+       // ReadTimeoutException timeoutException = new ReadTimeoutException("Timed out waiting " + getReceiveTimeout() + " to receive response");
+        fireChannelErrorCallback(request.getListener(), new TTransportException(TTransportException.TIMED_OUT, ReadTimeoutException.INSTANCE));
     }
 
     private void onReadTimeoutFired(Request request)
     {
         cancelAllTimeouts();
-        ReadTimeoutException timeoutException = new ReadTimeoutException("Timed out waiting " + getReadTimeout() + " to read data from server");
-        fireChannelErrorCallback(request.getListener(), new TTransportException(TTransportException.TIMED_OUT, timeoutException));
+     //   ReadTimeoutException timeoutException = new ReadTimeoutException("Timed out waiting " + getReadTimeout() + " to read data from server");
+        fireChannelErrorCallback(request.getListener(), new TTransportException(TTransportException.TIMED_OUT, ReadTimeoutException.INSTANCE));
     }
 
 
@@ -502,7 +501,8 @@ public abstract class AbstractClientChannel extends SimpleChannelHandler impleme
                     try {
                         timerTask.run(timeout);
                     } catch (Exception e) {
-                        Channels.fireExceptionCaught(channel.getNettyChannel(), e);
+                       //TODO
+                       // Channels.fireExceptionCaught(channel.getNettyChannel(), e);
                     }
                 }
             });
@@ -570,7 +570,7 @@ public abstract class AbstractClientChannel extends SimpleChannelHandler impleme
 
         ReadTimeoutTask(long timeoutNanos, Request request)
         {
-            this.timeoutHandler = TimeoutHandler.findTimeoutHandler(getNettyChannel().getPipeline());
+            this.timeoutHandler = TimeoutHandler.findTimeoutHandler(getNettyChannel().pipeline());
             this.timeoutNanos = timeoutNanos;
             this.request = request;
         }
