@@ -66,18 +66,22 @@ public class HttpClientChannel extends AbstractClientChannel {
 
         HttpResponse httpResponse = (HttpResponse) message;
 
-        if (!httpResponse.getStatus().equals(HttpResponseStatus.OK)) {
+        if (!httpResponse.status().equals(HttpResponseStatus.OK)) {
             throw new TTransportException("HTTP response had non-OK status: " + httpResponse
-                    .getStatus().toString());
+                    .status().toString());
         }
 
-        ByteBuf content = httpResponse.getContent();
-
-        if (!content.isReadable()) {
-            return null;
+        //TODO
+        HttpContent content= null;
+        ByteBuf buf = null;
+        if (message instanceof HttpContent) {
+            content = (HttpContent) message;
+            buf = content.content();
+//            if (!content.isReadable()) {
+//            return null;
         }
 
-        return content;
+        return buf;
     }
 
 //    @Override
@@ -88,7 +92,7 @@ public class HttpClientChannel extends AbstractClientChannel {
     @Override
     protected ChannelFuture writeRequest(ByteBuf request)
     {
-        HttpRequest httpRequest = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST,
+        DefaultFullHttpRequest httpRequest = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST,
                                                          endpointUri);
 
         httpRequest.headers().add(HttpHeaders.HOST, hostName);
@@ -103,7 +107,7 @@ public class HttpClientChannel extends AbstractClientChannel {
             }
         }
 
-        httpRequest.setContent(request);
+        httpRequest.content().writeBytes(request);
 
         return underlyingNettyChannel.write(httpRequest);
     }

@@ -100,7 +100,11 @@ public class AbstractLiveTest
                             ImmutableSet.of(thriftServerDef),
                             new NettyServerConfigBuilder().build());
 
-            nifty.start();
+            try {
+                nifty.start();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
 
         public int getPort() {

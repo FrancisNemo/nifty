@@ -46,7 +46,7 @@ public class NiftyBootstrap
     }
 
     @PostConstruct
-    public void start()
+    public void start() throws Exception
     {
         for (NettyServerTransport transport : transports.values()) {
             transport.start();

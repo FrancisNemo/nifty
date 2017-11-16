@@ -21,12 +21,20 @@ import com.google.common.base.Preconditions;
 import io.airlift.log.Logger;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
+import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.logging.LogLevel;
+import io.netty.handler.logging.LoggingHandler;
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslContextBuilder;
+import io.netty.handler.ssl.util.SelfSignedCertificate;
 import org.apache.thrift.protocol.TProtocolFactory;
 
 import javax.inject.Inject;
+import javax.net.ssl.SSLException;
 import java.net.InetSocketAddress;
+import java.security.cert.CertificateException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -43,11 +51,13 @@ public class NettyServerTransport
 {
     private static final Logger log = Logger.get(NettyServerTransport.class);
 
+    static final boolean SSL = System.getProperty("ssl") != null;
+
     private final int requestedPort;
     private int actualPort;
     private static final int NO_WRITER_IDLE_TIMEOUT = 0;
     private static final int NO_ALL_IDLE_TIMEOUT = 0;
-    private ServerBootstrap bootstrap;
+   // private ServerBootstrap bootstrap;
     private EventLoopGroup bossGroup;
     private EventLoopGroup workerGroup;
     private final ThriftServerDef def;
@@ -79,18 +89,33 @@ public class NettyServerTransport
      * channel type
      * **/
 
-    public void start()
+    public void start() throws Exception
     {
-        EventLoopGroup bossGroup = nettyServerConfig.getBossExecutor();
-        EventLoopGroup workerGroup = nettyServerConfig.getWorkerExecutor();
-        bootstrap = new ServerBootstrap(); // assistant class
+        // Configure SSL.
+        final SslContext sslCtx;
+        if (SSL) {
+            SelfSignedCertificate ssc = null;
+                ssc = new SelfSignedCertificate();
+                sslCtx = SslContextBuilder.forServer(ssc.certificate(), ssc.privateKey()).build();
+        } else {
+            sslCtx = null;
+        }
+
+        EventLoopGroup bossGroup = new NioEventLoopGroup(1);
+        EventLoopGroup workerGroup = new NioEventLoopGroup();
+
+        try {
+            ServerBootstrap bootstrap = new ServerBootstrap(); // assistant class
         bootstrap.group(bossGroup,workerGroup)
                 .channel(NioServerSocketChannel.class)
+                .handler(new LoggingHandler(LogLevel.INFO))
                 .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     protected void initChannel(SocketChannel socketChannel) throws Exception {
                         ChannelPipeline cp = socketChannel.pipeline();
-
+                        if (sslCtx != null) {
+                            cp.addLast(sslCtx.newHandler(socketChannel.alloc()));
+                        }
 //                        TProtocolFactory inputProtocolFactory = def.getDuplexProtocolFactory().getInputProtocolFactory();
 //                        NiftySecurityHandlers securityHandlers = def.getSecurityFactory().getSecurityHandlers(def, nettyServerConfig);
 
@@ -129,22 +154,20 @@ public class NettyServerTransport
                 .option(ChannelOption.SO_SNDBUF, 32*1024)
                 .option(ChannelOption.SO_RCVBUF, 32*1024)
                 .childOption(ChannelOption.SO_KEEPALIVE, true);
-        try {
+
             ChannelFuture future = bootstrap.bind(actualPort).sync();
             future.channel().closeFuture().sync();
-            //        bootstrap.setOptions(nettyServerConfig.getBootstrapOptions());
+//        bootstrap.setOptions(nettyServerConfig.getBootstrapOptions());
 //        bootstrap.setPipelineFactory(pipelineFactory);
 //        serverChannel = bootstrap.bind(new InetSocketAddress(requestedPort));
 //        InetSocketAddress actualSocket = (InetSocketAddress) serverChannel.getLocalAddress();
 //        actualPort = actualSocket.getPort();
-            Preconditions.checkState(actualPort != 0 && (actualPort == requestedPort || requestedPort == 0));
-            log.info("started transport %s:%s", def.getName(), actualPort);
-            if (def.getTransportAttachObserver() != null) {
-                def.getTransportAttachObserver().attachTransport(this);
-            }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } finally {
+//            Preconditions.checkState(actualPort != 0 && (actualPort == requestedPort || requestedPort == 0));
+//            log.info("started transport %s:%s", def.getName(), actualPort);
+//            if (def.getTransportAttachObserver() != null) {
+//                def.getTransportAttachObserver().attachTransport(this);
+//            }
+        }  finally {
             workerGroup.shutdownGracefully();
             bossGroup.shutdownGracefully();
         }

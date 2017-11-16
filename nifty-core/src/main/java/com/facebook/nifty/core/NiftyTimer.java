@@ -15,15 +15,19 @@
  */
 package com.facebook.nifty.core;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
+import io.netty.util.Timeout;
+import io.netty.util.Timer;
+import io.netty.util.TimerTask;
 
 import javax.annotation.PreDestroy;
 
 import java.io.Closeable;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 public final class NiftyTimer
-    implements Closeable
+    implements Closeable, Timer
 {
 //    public NiftyTimer(String prefix, long tickDuration, TimeUnit unit, int ticksPerWheel)
 //    {
@@ -45,5 +49,15 @@ public final class NiftyTimer
     {
         //TODO
         // stop();
+    }
+
+    @Override
+    public Timeout newTimeout(TimerTask timerTask, long l, TimeUnit timeUnit) {
+        return null;
+    }
+
+    @Override
+    public Set<Timeout> stop() {
+        return null;
     }
 }

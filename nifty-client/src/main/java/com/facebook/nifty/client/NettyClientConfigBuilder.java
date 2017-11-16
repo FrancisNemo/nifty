@@ -22,8 +22,8 @@ import com.google.common.base.Strings;
 import com.google.common.net.HostAndPort;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.Inject;
+import io.netty.util.Timer;
 
-import java.lang.reflect.Proxy;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadFactory;
 
@@ -37,11 +37,12 @@ public class NettyClientConfigBuilder extends NettyConfigBuilderBase<NettyClient
     private HostAndPort defaultSocksProxyAddress = null;
     private SslClientConfiguration sslClientConfiguration;
 
-    private final NioSocketChannelConfig socketChannelConfig = (NioSocketChannelConfig) Proxy.newProxyInstance(
-            getClass().getClassLoader(),
-            new Class<?>[]{NioSocketChannelConfig.class},
-            new Magic("")
-    );
+
+//    private final NioSocketChannelConfig socketChannelConfig = (NioSocketChannelConfig) Proxy.newProxyInstance(
+//            getClass().getClassLoader(),
+//            new Class<?>[]{NioSocketChannelConfig.class},
+//            new Magic("")
+//    );
 
     @Inject
     public NettyClientConfigBuilder()
@@ -49,7 +50,7 @@ public class NettyClientConfigBuilder extends NettyConfigBuilderBase<NettyClient
         // Thrift turns TCP_NODELAY by default, and turning it off can have latency implications
         // so let's turn it on by default as well. It can still be switched off by explicitly
         // calling setTcpNodelay(false) after construction.
-        getSocketChannelConfig().setTcpNoDelay(true);
+       // getSocketChannelConfig().setTcpNoDelay(true);
     }
 
     /**
@@ -59,10 +60,10 @@ public class NettyClientConfigBuilder extends NettyConfigBuilderBase<NettyClient
      *
      * @return A mutable {@link NioSocketChannelConfig}
      */
-    public NioSocketChannelConfig getSocketChannelConfig()
-    {
-        return socketChannelConfig;
-    }
+//    public NioSocketChannelConfig getSocketChannelConfig()
+//    {
+//        return socketChannelConfig;
+//    }
 
     /**
      * A default SOCKS proxy address for client connections. Defaults to {@code null} if not
@@ -84,7 +85,7 @@ public class NettyClientConfigBuilder extends NettyConfigBuilderBase<NettyClient
 
     public NettyClientConfig build()
     {
-        Timer timer = getTimer();
+//        Timer timer = getTimer();
         ExecutorService bossExecutor = getBossExecutor();
         int bossThreadCount = getBossThreadCount();
         ExecutorService workerExecutor = getWorkerExecutor();
@@ -93,7 +94,7 @@ public class NettyClientConfigBuilder extends NettyConfigBuilderBase<NettyClient
         return new NettyClientConfig(
                 getBootstrapOptions(),
                 defaultSocksProxyAddress,
-                timer != null ? timer : new NiftyTimer(threadNamePattern("")),
+               new NiftyTimer(),
                 bossExecutor != null ? bossExecutor : buildDefaultBossExecutor(),
                 bossThreadCount,
                 workerExecutor != null ? workerExecutor : buildDefaultWorkerExecutor(),
