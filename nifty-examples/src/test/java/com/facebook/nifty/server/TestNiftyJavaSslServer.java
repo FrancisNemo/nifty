@@ -27,6 +27,7 @@ import com.facebook.nifty.test.LogEntry;
 import com.facebook.nifty.test.ResultCode;
 import com.facebook.nifty.test.scribe;
 import io.airlift.log.Logger;
+import io.netty.handler.ssl.SslHandler;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
@@ -75,10 +76,13 @@ public class TestNiftyJavaSslServer
     private void startServer(final ThriftServerDefBuilder thriftServerDefBuilder)
     {
         server = new NettyServerTransport(thriftServerDefBuilder.build(),
-                                          NettyServerConfig.newBuilder().build(),
-                                          new DefaultChannelGroup());
-        server.start();
-        port = ((InetSocketAddress)server.getServerChannel().getLocalAddress()).getPort();
+                                          NettyServerConfig.newBuilder().build());
+        try {
+            server.start();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        port = ((InetSocketAddress)server.getServerChannel().localAddress()).getPort();
     }
 
     SslServerConfiguration createSSLServerConfiguration(boolean allowPlaintext, SessionTicketKey[] ticketKeys) {
@@ -235,8 +239,8 @@ public class TestNiftyJavaSslServer
     private static SSLSession getSSLSession(scribe.Client client) {
         TNiftyClientChannelTransport clientTransport =
                 (TNiftyClientChannelTransport) client.getInputProtocol().getTransport();
-        SslHandler sslHandler = (SslHandler) clientTransport.getChannel().getNettyChannel().getPipeline().get("ssl");
-        return sslHandler.getEngine().getSession();
+        SslHandler sslHandler = (SslHandler) clientTransport.getChannel().getNettyChannel().pipeline().get("ssl");
+        return sslHandler.engine().getSession();
     }
 
     private static boolean isSessionResumed(SSLSession sslSession) throws NoSuchFieldException, IllegalAccessException {

@@ -58,6 +58,7 @@ public class NettyServerTransport
     private static final int NO_WRITER_IDLE_TIMEOUT = 0;
     private static final int NO_ALL_IDLE_TIMEOUT = 0;
    // private ServerBootstrap bootstrap;
+    private ChannelFuture serverChannel;
     private EventLoopGroup bossGroup;
     private EventLoopGroup workerGroup;
     private final ThriftServerDef def;
@@ -159,7 +160,7 @@ public class NettyServerTransport
             future.channel().closeFuture().sync();
 //        bootstrap.setOptions(nettyServerConfig.getBootstrapOptions());
 //        bootstrap.setPipelineFactory(pipelineFactory);
-//        serverChannel = bootstrap.bind(new InetSocketAddress(requestedPort));
+        serverChannel = bootstrap.bind(new InetSocketAddress(requestedPort));
 //        InetSocketAddress actualSocket = (InetSocketAddress) serverChannel.getLocalAddress();
 //        actualPort = actualSocket.getPort();
 //            Preconditions.checkState(actualPort != 0 && (actualPort == requestedPort || requestedPort == 0));
@@ -212,10 +213,10 @@ public class NettyServerTransport
         }
     }
 
-//    public Channel getServerChannel()
-//    {
-//        return serverChannel;
-//    }
+    public Channel getServerChannel()
+    {
+        return serverChannel.channel();
+    }
 
     public int getPort()
     {

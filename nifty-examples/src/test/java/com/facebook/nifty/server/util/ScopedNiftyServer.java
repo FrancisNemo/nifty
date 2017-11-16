@@ -27,12 +27,15 @@ public class ScopedNiftyServer implements AutoCloseable {
 
     public ScopedNiftyServer(ThriftServerDefBuilder defBuilder) {
         server = new NettyServerTransport(defBuilder.build());
-        server.start();
+        try {
+            server.start();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public int getPort() {
-        InetSocketAddress localAddress = (InetSocketAddress)server.getServerChannel()
-                                                                  .getLocalAddress();
+        InetSocketAddress localAddress = (InetSocketAddress)server.getServerChannel().localAddress();
         return localAddress.getPort();
     }
 

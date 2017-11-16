@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.netty.handler.ssl;
+package io.netty.handler.ssl;
 
-import io.netty.handler.ssl.JdkSslContext;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufInputStream;
 
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLContext;
@@ -31,8 +32,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+
 /**
- * This is a copy of {@link JdkSslClientContext} but the constructor takes an extra KeyManager[] parameter that is
+ * This is a copy of {@link /JdkSslClientContext} but the constructor takes an extra KeyManager[] parameter that is
  * passed to ctx.init(). This allows us to create a client with a certificate. For tesing only, do not use in
  * production. Will probably be removed when we update to a newer version of Netty that supports client-side certs.
  */
@@ -44,7 +46,7 @@ public final class HackyJdkSslClientContext extends JdkSslContext {
     /**
      * Creates a new instance.
      *
-     * @param bufPool the buffer pool which will be used by this context.
+     * @param /bufPool the buffer pool which will be used by this context.
      *                {@code null} to use the default buffer pool.
      * @param certChainFile an X.509 certificate chain file in PEM format.
      *                      {@code null} to use the system default
@@ -62,7 +64,6 @@ public final class HackyJdkSslClientContext extends JdkSslContext {
      *                       {@code 0} to use the default value.
      */
     public HackyJdkSslClientContext(
-        SslBufferPool bufPool,
         File certChainFile,
         KeyManager[] keyManagers,
         TrustManagerFactory trustManagerFactory,
@@ -71,12 +72,12 @@ public final class HackyJdkSslClientContext extends JdkSslContext {
         long sessionCacheSize,
         long sessionTimeout) throws SSLException {
 
-        super(bufPool, ciphers);
+        super(null, true, null);
 
         if (nextProtocols != null && nextProtocols.iterator().hasNext()) {
-            if (!JettyNpnSslEngine.isAvailable()) {
-                throw new SSLException("NPN/ALPN unsupported: " + nextProtocols);
-            }
+//            if (!JettyNpnSslEngine.isAvailable()) {
+//                throw new SSLException("NPN/ALPN unsupported: " + nextProtocols);
+//            }
 
             List<String> nextProtoList = new ArrayList<String>();
             for (String p: nextProtocols) {
@@ -92,7 +93,7 @@ public final class HackyJdkSslClientContext extends JdkSslContext {
 
         try {
             if (certChainFile == null) {
-                ctx = SSLContext.getInstance(PROTOCOL);
+                ctx = SSLContext.getInstance("TLS");
                 if (trustManagerFactory == null) {
                     ctx.init(null, null, null);
                 } else {
@@ -105,7 +106,7 @@ public final class HackyJdkSslClientContext extends JdkSslContext {
                 CertificateFactory cf = CertificateFactory.getInstance("X.509");
 
                 for (ByteBuf buf: PemReader.readCertificates(certChainFile)) {
-                    X509Certificate cert = (X509Certificate) cf.generateCertificate(new ChannelBufferInputStream(buf));
+                    X509Certificate cert = (X509Certificate) cf.generateCertificate(new ByteBufInputStream(buf));
                     X500Principal principal = cert.getSubjectX500Principal();
                     ks.setCertificateEntry(principal.getName("RFC2253"), cert);
                 }
@@ -117,7 +118,7 @@ public final class HackyJdkSslClientContext extends JdkSslContext {
                 trustManagerFactory.init(ks);
 
                 // Initialize the SSLContext to work with the trust managers.
-                ctx = SSLContext.getInstance(PROTOCOL);
+                ctx = SSLContext.getInstance("TLS");
                 ctx.init(keyManagers, trustManagerFactory.getTrustManagers(), null);
             }
 
@@ -133,18 +134,18 @@ public final class HackyJdkSslClientContext extends JdkSslContext {
         }
     }
 
-    @Override
-    public SSLContext context() {
-        return ctx;
-    }
-
-    @Override
-    public boolean isClient() {
-        return true;
-    }
-
-    @Override
-    public List<String> nextProtocols() {
-        return nextProtocols;
-    }
+//    @Override
+//    public SSLContext context() {
+//        return ctx;
+//    }
+//
+//    @Override
+//    public boolean isClient() {
+//        return true;
+//    }
+//
+//    @Override
+//    public List<String> nextProtocols() {
+//        return nextProtocols;
+//    }
 }

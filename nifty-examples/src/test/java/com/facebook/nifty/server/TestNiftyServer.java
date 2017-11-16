@@ -70,7 +70,11 @@ public class TestNiftyServer
     {
         server = new NettyServerTransport(thriftServerDefBuilder.build(),
                                           NettyServerConfig.newBuilder().build());
-        server.start();
+        try {
+            server.start();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         port = 8080;
     }
 

@@ -270,7 +270,11 @@ public class TestPlainServer
                 }
         ).getInstance(NiftyBootstrap.class);
 
-        bootstrap.start();
+        try {
+            bootstrap.start();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private ThriftServerDefBuilder getThriftServerDefBuilder()

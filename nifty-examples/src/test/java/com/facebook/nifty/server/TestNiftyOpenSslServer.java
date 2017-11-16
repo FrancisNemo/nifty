@@ -38,6 +38,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.io.Files;
 import io.airlift.log.Logger;
 import io.airlift.units.Duration;
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslHandler;
 import org.apache.thrift.TApplicationException;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
@@ -45,7 +47,7 @@ import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 import org.apache.tomcat.jni.SessionTicketKey;
-import org.jboss.netty.handler.ssl.HackyJdkSslClientContext;
+import io.netty.handler.ssl.HackyJdkSslClientContext;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
@@ -148,10 +150,13 @@ public class TestNiftyOpenSslServer
     private void startServer(final ThriftServerDefBuilder thriftServerDefBuilder)
     {
         server = new NettyServerTransport(thriftServerDefBuilder.build(),
-                                          NettyServerConfig.newBuilder().build(),
-                                          new DefaultChannelGroup());
-        server.start();
-        port = ((InetSocketAddress)server.getServerChannel().getLocalAddress()).getPort();
+                                          NettyServerConfig.newBuilder().build());
+        try {
+            server.start();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        port = ((InetSocketAddress)server.getServerChannel().localAddress()).getPort();
     }
 
     SslServerConfiguration createSSLServerConfiguration(boolean allowPlaintext,
@@ -210,7 +215,6 @@ public class TestNiftyOpenSslServer
 
     private SslClientConfiguration getClientSSLConfiguration(File certFile, KeyManager[] keyManagers) throws IOException {
         SslContext context = new HackyJdkSslClientContext(
-            null,
             certFile == null ? getServerCertFile() : certFile,
             keyManagers,
             null,
@@ -857,8 +861,8 @@ public class TestNiftyOpenSslServer
     private static SSLSession getSSLSession(scribe.Client client) {
         TNiftyClientChannelTransport clientTransport =
                 (TNiftyClientChannelTransport) client.getInputProtocol().getTransport();
-        SslHandler sslHandler = (SslHandler) clientTransport.getChannel().getNettyChannel().getPipeline().get("ssl");
-        return sslHandler.getEngine().getSession();
+        SslHandler sslHandler = (SslHandler) clientTransport.getChannel().getNettyChannel().pipeline().get("ssl");
+        return sslHandler.engine().getSession();
     }
 
     private static boolean isSessionResumed(SSLSession sslSession) throws NoSuchFieldException, IllegalAccessException {
